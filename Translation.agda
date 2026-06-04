@@ -81,7 +81,18 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
           top)
       where
         ↑arg = λ x → coe (cong Tm (cong El (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ)))) x
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ {a = a} {f = f} = {!!}
+    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ {a = a} {f = f} = record
+      { to = λ g → coe (cong Tm (cong El (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ)))) (lamᴿ λ x⊤ → g (↑arg x⊤))
+      ; from
+        = λ g x → coe (cong (λ y → Tm (El (first (f y) ∙ᴱ ⊤))) {! ↑arg (↓arg x) ≡ x !})
+          (coe (cong Tm (cong El (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ))) g
+            ∙ᴿ ↓arg x)
+      ; to-from = {!!}
+      ; from-to = {!!}
+      }
+      where
+        ↑arg = λ x → coe (cong Tm (cong El (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ)))) x
+        ↓arg = λ x → coe (cong Tm (cong El (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ))) x
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
     ps .PSG.psogat-ctors .PSGᶜ.In-prop = In-prop
     ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
