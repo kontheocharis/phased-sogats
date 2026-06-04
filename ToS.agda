@@ -1,6 +1,6 @@
-module Main where
+module ToS where
 
-open import Data.Product using (Σ-syntax; proj₁; proj₂; _,_)
+open import Data.Product using (Σ-syntax; proj₁; proj₂; _,_; _×_)
 open import Data.Unit using (tt) renaming (⊤ to 𝟙)
 open import Utils hiding (⊤; _∧_)
 
@@ -35,7 +35,7 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     P : Set
     m n : P → Tm _
     X : S → Ty
-    
+
 
   record GAT-ToSᶜ : Set₁ where
     field
@@ -50,7 +50,7 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
 
       Π : (a : Tm U) → (Tm (El a) → Ty) → Ty
       lam-app : ((a : Tm (El a)) → Tm (F a)) ≃ Tm (Π a F)
-  
+
       Eq : Tm A → Tm A → Ty
       refl-reflect : ((a ≡ b) true) ≃ Tm (Eq a b)
 
@@ -164,11 +164,21 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
       In : Phase → Set
       In-prop : (x y : In t) → x ≡ y
       in⊤ : In ⊤
+      In-and-proj : (In t × In u) ≃ In (t ∧ u)
 
       Πᴾ : (p : Phase) → Tm U → Tm U
       Πᴾᴿ : (p : Phase) → Tm Uᴿ → Tm Uᴿ
       ↓↑ : (In t → Tm (El a)) ≃ Tm (El (Πᴾ t a))
       ↓↑ᴿ : (In t → Tm (El (elᴿ a))) ≃ Tm (El (elᴿ (Πᴾᴿ t a)))
+
+    In-and : In t → In u → In (t ∧ u)
+    In-and x y = In-and-proj .to (x , y)
+
+    In-fst : In (t ∧ u) → In t
+    In-fst z = In-and-proj .from z .proj₁
+
+    In-snd : In (t ∧ u) → In u
+    In-snd z = In-and-proj .from z .proj₂
 
 
 record GAT-ToS : Set₁ where
@@ -194,80 +204,3 @@ record PSOGAT-ToS (Φ : PhaseAlg) : Set₁ where
   field
     psogat-ctors : in-GAT-ToSˢ.PSOGAT-ToSᶜ gat-sorts Φ gat-ctors sogat-ctors
   open in-GAT-ToSˢ.PSOGAT-ToSᶜ psogat-ctors public
-
--- I need to remove all this module noise 
-module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
-  module G = GAT-ToS
-  module Gˢ = GAT-ToSˢ
-  module Gᶜ = in-GAT-ToSˢ.GAT-ToSᶜ
-
-  module SG = SOGAT-ToS
-  module SGᶜ = in-GAT-ToSˢ.SOGAT-ToSᶜ
-
-  module PSG = PSOGAT-ToS
-  module PSGᶜ = in-GAT-ToSˢ.PSOGAT-ToSᶜ
-
-  open SOGAT-ToS sg
-  open PhaseAlg Φ
-
-  module _
-    (In : Phase → Tm Uᴿ)
-    (in⊤ : Tm (El (elᴿ (In ⊤))))
-    (In-prop : ∀ {t} (x y : Tm (El (elᴿ (In t)))) → x ≡ y)
-    where
-  
-    ps : PSOGAT-ToS Φ
-    ps .PSG.sogat .SG.gat .G.gat-sorts .Gˢ.Ty = Ty
-    ps .PSG.sogat .SG.gat .G.gat-sorts .Gˢ.Tm = Tm
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.Σ = Σ
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.pair-proj = pair-proj
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.`1 = `1
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.unit-uniq = unit-uniq 
-
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.U
-      = X ∶ [ p ∶ Phase ] ⇒ᴱ U ⨾
-        ↓↑ ∶ [ p ∶ Phase ] ⇒ᴱ (Iso (In p ⇒ᴿ X ∙ᴱ ⊤) (X ∙ᴱ p)) ⨾
-        `1
-
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.El X = El (first X ∙ᴱ ⊤)
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.Π A F = Π (first A ∙ᴱ ⊤) F
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.lam-app = lam-app
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.Eq = Eq
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.refl-reflect = refl-reflect
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.Πᴱ = Πᴱ
-    ps .PSG.sogat .SG.gat .G.gat-ctors .Gᶜ.lam-appᴱ = lam-appᴱ
-
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Uᴿ
-      = X ∶ [ p ∶ Phase ] ⇒ᴱ Uᴿ ⨾
-        ↓↑ ∶ [ p ∶ Phase ] ⇒ᴱ (Iso (In p ⇒ᴿ elᴿ (X ∙ᴱ ⊤)) (elᴿ (X ∙ᴱ p))) ⨾
-        `1
-
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.elᴿ X
-      = pair (lamᴱ λ p → elᴿ (first X ∙ᴱ p))
-        (coe
-          (cong Tm (cong (λ s → Σ (Πᴱ Phase s) (λ _ → `1))
-          (funext (λ p → cong₂ Iso (cong (In p ⇒ᴿ_) (sym lamᴱ-appᴱ )) (sym lamᴱ-appᴱ)))))
-        (second X))
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Πᴿ a F
-      = pair (lamᴱ λ p →
-        Πᴿ (In p) (λ ip → Πᴿ (first a ∙ᴱ p) (λ x →
-          first (F (coe (cong Tm (cong El
-          (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ))))
-          (iso-bwd (first (second a) ∙ᴱ p) x ∙ᴿ ip))) ∙ᴱ p)))
-        (pair (lamᴱ λ p →
-          iso {! !} {! !} (λ x → {! !}) (λ x → {! !}))
-          top)
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ = {!!}
-    ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
-    ps .PSG.psogat-ctors .PSGᶜ.In-prop = In-prop
-    ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
-    ps .PSG.psogat-ctors .PSGᶜ.Πᴾ p X
-      = pair (lamᴱ λ p' → first X ∙ᴱ (p ∧ p'))
-        (pair (lamᴱ (λ p' → {! pair ? ? !})) top)
-    ps .PSG.psogat-ctors .PSGᶜ.↓↑ = {! !}
-    ps .PSG.psogat-ctors .PSGᶜ.Πᴾᴿ p X
-      = pair (lamᴱ λ p' → first X ∙ᴱ (p ∧ p'))
-        (pair {!!} top)
-    ps .PSG.psogat-ctors .PSGᶜ.↓↑ᴿ = {!!}
-
-
