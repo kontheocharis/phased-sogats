@@ -68,7 +68,19 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
           (funext (λ p → cong₂ Iso (cong (In p ⇒ᴿ_) (sym lamᴱ-appᴱ )) (sym lamᴱ-appᴱ)))))
         (second X))
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Πᴿ a F
-      = pair (lamᴱ λ p → Πᴿ (first a ∙ᴱ ⊤) (λ x⊤ → first (F ({!!})) ∙ᴱ p)) ({!!})
+      = pair (lamᴱ λ p → Πᴿ (first a ∙ᴱ ⊤) (λ x⊤ → first (F (↑arg x⊤)) ∙ᴱ p))
+        (pair (lamᴱ λ p → iso
+            (λ f → coe (cong Tm (cong El (sym lamᴱ-appᴱ)))
+              (lamᴿ λ x⊤ → iso-fwd (first (second (F (↑arg x⊤))) ∙ᴱ p)
+              (lamᴿ λ ip → coe (cong Tm (cong El lamᴱ-appᴱ)) (f ∙ᴿ ip) ∙ᴿ x⊤)))
+            (λ h → lamᴿ λ ip → coe (cong Tm (cong El (sym lamᴱ-appᴱ)))
+              (lamᴿ λ x⊤ → iso-bwd (first (second (F (↑arg x⊤))) ∙ᴱ p)
+              (coe (cong Tm (cong El lamᴱ-appᴱ)) h ∙ᴿ x⊤) ∙ᴿ ip))
+            (λ x → {!  !})
+            (λ x → {!  !}))
+          top)
+      where
+        ↑arg = λ x → coe (cong Tm (cong El (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ)))) x
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ {a = a} {f = f} = {!!}
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
     ps .PSG.psogat-ctors .PSGᶜ.In-prop = In-prop
