@@ -80,6 +80,9 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     _∙_ : Tm (Π a F) → (a : Tm (El a)) → Tm (F a)
     _∙_ = lam-app .from
 
+    lam : ((x : Tm (El a)) → Tm (F x)) → Tm (Π a F)
+    lam = lam-app .to
+
     _∙ᴱ_ : Tm (Πᴱ S X) → (s : S) → Tm (X s)
     _∙ᴱ_ = lam-appᴱ .from
 
@@ -88,6 +91,9 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
 
     lamᴱ-appᴱ : lamᴱ m ∙ᴱ u ≡ m u
     lamᴱ-appᴱ = ap-$ (lam-appᴱ .from-to _) _
+
+    lam-app∙ : lam f ∙ b ≡ f b
+    lam-app∙ = ap-$ (lam-app .from-to _) _
 
     infixr 3 _⇒_
     _⇒_ : Tm U → Ty → Ty
@@ -112,6 +118,20 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
 
     iso-bwd-fwd : iso-bwd a (iso-fwd a c) ≡ c
     iso-bwd-fwd {a = i} {c = x} = refl-reflect .from (first (second (second (second i))) ∙ x) .witness
+
+    iso : (fwd : Tm (El a) → Tm (El b)) (bwd : Tm (El b) → Tm (El a))
+          → ((x : Tm (El b)) → fwd (bwd x) ≡ x)
+          → ((x : Tm (El a)) → bwd (fwd x) ≡ x)
+          → Tm (Iso a b)
+    iso fwd bwd fb bf =
+      pair (lam fwd) (pair (lam bwd)
+        (pair (lam λ x → refl-reflect .to
+          (by (trans (cong (lam fwd ∙_) lam-app∙)
+          (trans lam-app∙ (fb x)))))
+        (pair (lam λ x → refl-reflect .to
+          (by (trans (cong (lam bwd ∙_) lam-app∙)
+          (trans lam-app∙ (bf x)))))
+      top)))
 
   record SOGAT-ToSᶜ (gat : GAT-ToSᶜ) : Set₁ where
     open GAT-ToSᶜ gat
@@ -228,7 +248,9 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
           first (F (coe (cong Tm (cong El
           (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ))))
           (iso-bwd (first (second a) ∙ᴱ p) x ∙ᴿ ip))) ∙ᴱ p)))
-        {! !}
+        (pair (lamᴱ λ p →
+          iso {! !} {! !} (λ x → {! !}) (λ x → {! !}))
+          top)
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ = {!!}
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
     ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
