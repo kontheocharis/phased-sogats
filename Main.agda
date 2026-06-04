@@ -162,7 +162,9 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     field
 
       In : Phase → Set
+      In-prop : (x y : In t) → x ≡ y
       in⊤ : In ⊤
+
       Πᴾ : (p : Phase) → Tm U → Tm U
       Πᴾᴿ : (p : Phase) → Tm Uᴿ → Tm Uᴿ
       ↓↑ : (In t → Tm (El a)) ≃ Tm (El (Πᴾ t a))
@@ -208,7 +210,11 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
   open SOGAT-ToS sg
   open PhaseAlg Φ
 
-  module _ (In : Phase → Tm Uᴿ) (in⊤ : Tm (El (elᴿ (In ⊤)))) where
+  module _
+    (In : Phase → Tm Uᴿ)
+    (in⊤ : Tm (El (elᴿ (In ⊤))))
+    (In-prop : ∀ {t} (x y : Tm (El (elᴿ (In t)))) → x ≡ y)
+    where
   
     ps : PSOGAT-ToS Φ
     ps .PSG.sogat .SG.gat .G.gat-sorts .Gˢ.Ty = Ty
@@ -253,6 +259,7 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
           top)
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ = {!!}
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
+    ps .PSG.psogat-ctors .PSGᶜ.In-prop = In-prop
     ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
     ps .PSG.psogat-ctors .PSGᶜ.Πᴾ p X
       = pair (lamᴱ λ p' → first X ∙ᴱ (p ∧ p'))
