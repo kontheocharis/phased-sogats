@@ -83,6 +83,9 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     lamᴱ : ((s : S) → Tm (X s)) → Tm (Πᴱ S X)
     lamᴱ = lam-appᴱ .to
 
+    lamᴱ-appᴱ : lamᴱ m ∙ᴱ u ≡ m u
+    lamᴱ-appᴱ = ap-$ (lam-appᴱ .from-to _) _
+
     infixr 3 _⇒_
     _⇒_ : Tm U → Ty → Ty
     A ⇒ B = Π A (λ _ → B)
@@ -93,7 +96,19 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
       to ∶ B ⇒ El A ⨾
       from-to ∶ [ x ∶ B ] ⇒ Eq (from ∙ (to ∙ x)) x ⨾
       to-from ∶ [ x ∶ A ] ⇒ Eq (to ∙ (from ∙ x)) x ⨾
-      `1 
+      `1
+
+    iso-fwd : Tm (Iso a b) → Tm (El a) → Tm (El b)
+    iso-fwd i x = first i ∙ x
+
+    iso-bwd : Tm (Iso a b) → Tm (El b) → Tm (El a)
+    iso-bwd i x = first (second i) ∙ x
+
+    iso-fwd-bwd : iso-fwd a (iso-bwd a c) ≡ c
+    iso-fwd-bwd {a = i} {c = x} = refl-reflect .from (first (second (second i)) ∙ x) .witness
+
+    iso-bwd-fwd : iso-bwd a (iso-fwd a c) ≡ c
+    iso-bwd-fwd {a = i} {c = x} = refl-reflect .from (first (second (second (second i))) ∙ x) .witness
 
   record SOGAT-ToSᶜ (gat : GAT-ToSᶜ) : Set₁ where
     open GAT-ToSᶜ gat
@@ -118,6 +133,7 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     field
 
       In : Phase → Set
+      in⊤ : In ⊤
       Πᴾ : (p : Phase) → Tm U → Tm U
       Πᴾᴿ : (p : Phase) → Tm Uᴿ → Tm Uᴿ
       ↓↑ : (In t → Tm (El a)) ≃ Tm (El (Πᴾ t a))
@@ -163,7 +179,7 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
   open SOGAT-ToS sg
   open PhaseAlg Φ
 
-  module _ (In : Phase → Tm Uᴿ) where
+  module _ (In : Phase → Tm Uᴿ) (in⊤ : Tm (El (elᴿ (In ⊤)))) where
   
     ps : PSOGAT-ToS Φ
     ps .PSG.sogat .SG.gat .G.gat-sorts .Gˢ.Ty = Ty
@@ -191,10 +207,17 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
         ↓↑ ∶ [ p ∶ Phase ] ⇒ᴱ (Iso (In p ⇒ᴿ elᴿ (X ∙ᴱ ⊤)) (elᴿ (X ∙ᴱ p))) ⨾
         `1
 
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.elᴿ X = pair (lamᴱ λ p → elᴿ (first X ∙ᴱ p)) {! second X -- OK just coercions!}
-    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Πᴿ a F = pair {!!} {!!}
+    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.elᴿ X
+      = pair (lamᴱ λ p → elᴿ (first X ∙ᴱ p))
+        (coe
+          (cong Tm (cong (λ s → Σ (Πᴱ Phase s) (λ _ → `1))
+          (funext (λ p → cong₂ Iso (cong (In p ⇒ᴿ_) (sym lamᴱ-appᴱ )) (sym lamᴱ-appᴱ)))))
+        (second X))
+    ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Πᴿ a F
+      = pair (lamᴱ λ p → Πᴿ (first a ∙ᴱ p) (λ x → first (F ({! ?!})) ∙ᴱ p)) {! !}
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ = {!!}
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
+    ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
     ps .PSG.psogat-ctors .PSGᶜ.Πᴾ p X
       = pair (lamᴱ λ p' → first X ∙ᴱ (p ∧ p'))
         (pair (lamᴱ (λ p' → {! pair ? ? !})) top)
