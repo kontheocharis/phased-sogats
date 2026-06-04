@@ -74,6 +74,9 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     second : (p : Tm (Σ A F)) → Tm (F (first p))
     second p = pair-proj .from p .proj₂
 
+    first-pair : first (pair a b) ≡ a
+    first-pair = cong proj₁ (pair-proj .from-to (_ , _))
+
     _∙_ : Tm (Π a F) → (a : Tm (El a)) → Tm (F a)
     _∙_ = lam-app .from
 
@@ -124,6 +127,12 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     infixr 3 _⇒ᴿ_
     _⇒ᴿ_ : Tm Uᴿ → Tm U → Tm U
     A ⇒ᴿ B = Πᴿ A (λ _ → B)
+
+    _∙ᴿ_ : Tm (El (Πᴿ a f)) → (x : Tm (El (elᴿ a))) → Tm (El (f x))
+    _∙ᴿ_ = lam-appᴿ .from
+
+    lamᴿ : ((x : Tm (El (elᴿ a))) → Tm (El (f x))) → Tm (El (Πᴿ a f))
+    lamᴿ = lam-appᴿ .to
 
 
   record PSOGAT-ToSᶜ (Φ : PhaseAlg) (gat : GAT-ToSᶜ) (sogat : SOGAT-ToSᶜ gat) : Set₁ where
@@ -214,7 +223,12 @@ module PSOGAT⇒SOGAT (sg : SOGAT-ToS) (Φ : PhaseAlg) where
           (funext (λ p → cong₂ Iso (cong (In p ⇒ᴿ_) (sym lamᴱ-appᴱ )) (sym lamᴱ-appᴱ)))))
         (second X))
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.Πᴿ a F
-      = pair (lamᴱ λ p → Πᴿ (first a ∙ᴱ p) (λ x → first (F ({! ?!})) ∙ᴱ p)) {! !}
+      = pair (lamᴱ λ p →
+        Πᴿ (In p) (λ ip → Πᴿ (first a ∙ᴱ p) (λ x →
+          first (F (coe (cong Tm (cong El
+          (sym (trans (cong (_∙ᴱ ⊤) first-pair) lamᴱ-appᴱ))))
+          (iso-bwd (first (second a) ∙ᴱ p) x ∙ᴿ ip))) ∙ᴱ p)))
+        {! !}
     ps .PSG.sogat .SG.sogat-ctors .SGᶜ.lam-appᴿ = {!!}
     ps .PSG.psogat-ctors .PSGᶜ.In p = Tm (El (elᴿ (In p)))
     ps .PSG.psogat-ctors .PSGᶜ.in⊤ = in⊤
