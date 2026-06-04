@@ -1,0 +1,6 @@
+name: phased-sogats
+depend: standard-library
+include: .
+flags:
+  --prop
+  --rewriting
