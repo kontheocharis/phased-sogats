@@ -13,8 +13,7 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (sogat : SO.SOGAT-ToS) where
   open SO.SOGAT-ToS sogat
 
   -- What we will do is build a model of PSOGAT ToS in Psh(Φ, Ty), that is,
-  -- internal presheaves over the input phase algebra, valued in the object
-  -- universe.
+  -- presheaves over the input phase algebra, valued in the object universe.
 
   module P = FO.PSOGAT-ToS
   module S = FO-SOGAT.SOGAT-ToS
