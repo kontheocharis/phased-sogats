@@ -6,11 +6,13 @@ import Theories.FO.CwF as FO-CwF
 import Theories.FO.GAT as FO-GAT
 import Theories.FO.SOGAT as FO-SOGAT
 import Theories.FO.PSOGAT as FO
+open import Utils hiding (⊤; _∧_)
 
 module PSOGAT-to-SOGAT (Φ : PhaseAlg) (sogat : SO.SOGAT-ToS) where
   -- In here, we pretend to be in a two-level type theory where the
   -- object theory is the SOGAT ToS, given by the `sogat` module parameter.
   open SO.SOGAT-ToS sogat
+  open InPhaseAlg Φ
 
   -- What we will do is build a model of PSOGAT ToS in Psh(Φ, Ty), that is,
   -- presheaves over the input phase algebra, valued in the object universe.
@@ -25,11 +27,50 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (sogat : SO.SOGAT-ToS) where
   module Sᶜ = FO-SOGAT.InGAT.SOGATCtors
   module Pᶜ = FO.InSOGAT.PSOGATCtors
 
+  variable
+    le : q ≤ p
+    le' : r ≤ q
+
+  record Conᴹ : Set where
+    field
+      obj  : Phase → Ty
+      rest : q ≤ p → Tm (obj p) → Tm (obj q)
+      rest-id : {γ : Tm (obj p)} → rest ≤-refl γ ≡ γ
+      rest-⊙ : {γ : Tm (obj p)} → rest (le' ⊙ le) γ ≡ rest le' (rest le γ)
+
+  variable
+    Γ Δ Θ : Conᴹ
+
+  record Subᴹ (Δ Γ : Conᴹ) : Set where
+    field
+      map : Tm (Conᴹ.obj Δ p) → Tm (Conᴹ.obj Γ p)
+      nat : ∀ {δ} → Conᴹ.rest Γ le (map δ) ≡ map (Conᴹ.rest Δ le δ)
+
+  record Tyᴹ (Γ : Conᴹ) : Set where
+    field
+      fib  : Tm (Conᴹ.obj Γ p) → Ty
+      rest : (le : q ≤ p) (γ : Tm (Conᴹ.obj Γ p))
+        → Tm (fib γ) → Tm (fib (Conᴹ.rest Γ le γ))
+      rest-id : ∀ {γ : Tm (Conᴹ.obj Γ p)} {a}
+        → rest ≤-refl γ a ≡[ cong Tm (cong fib (Conᴹ.rest-id Γ {γ = γ})) ] a
+      rest-⊙ : ∀ {γ : Tm (Conᴹ.obj Γ p)} {a}
+        → rest (le' ⊙ le) γ a
+            ≡[ cong Tm (cong fib (Conᴹ.rest-⊙ Γ {γ = γ})) ]
+          rest le' (Conᴹ.rest Γ le γ) (rest le γ a)
+
+  variable
+    A B : Tyᴹ Γ
+
+  record Tmᴹ (Γ : Conᴹ) (A : Tyᴹ Γ) : Set where
+    field
+      at  : (γ : Tm (Conᴹ.obj Γ p)) → Tm (Tyᴹ.fib A γ)
+      nat : ∀ {γ} → Tyᴹ.rest A le γ (at γ) ≡ at (Conᴹ.rest Γ le γ)
+
   fo-psogat : FO.PSOGAT-ToS Φ
-  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Con = {!!}
-  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Sub = {!!}
-  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Ty = {!!}
-  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Tm = {!!}
+  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Con = Conᴹ
+  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Sub = Subᴹ
+  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Ty = Tyᴹ
+  fo-psogat .P.sogat .S.gat .G.cwf .C.sorts .Cˢ.Tm = Tmᴹ
   fo-psogat .P.sogat .S.gat .G.cwf .C.ctors .Cᶜ.id = {!!}
   fo-psogat .P.sogat .S.gat .G.cwf .C.ctors .Cᶜ._∘_ = {!!}
   fo-psogat .P.sogat .S.gat .G.cwf .C.ctors .Cᶜ.id∘ = {!!}
