@@ -20,6 +20,7 @@ module InGAT (gat : GAT-ToS) where
       Πᴿ : (a : Tm Γ Uᴿ) → Tm (Γ ▷ El (elᴿ a)) U → Tm Γ U
       lamᴿ : Tm (Γ ▷ El (elᴿ a)) (El Bu) → Tm Γ (El (Πᴿ a Bu))
       appᴿ : Tm Γ (El (Πᴿ a Bu)) → Tm (Γ ▷ El (elᴿ a)) (El Bu)
+      -- @@Todo: substitution rules for ΠR, lam
       Πᴿ-β : appᴿ (lamᴿ a) ≡ a
       Πᴿ-η : lamᴿ (appᴿ a) ≡ a
 

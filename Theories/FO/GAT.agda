@@ -29,6 +29,7 @@ module InCwF (cwf : CwF) where
       Σ-β₁ : fst (pair a b) ≡ a
       Σ-β₂ : snd (pair a b) ≡[ ap-Tm (cong (λ x → B [ < x > ]T) Σ-β₁) ] b
       Σ-η : pair (fst a) (snd a) ≡ a
+      -- @@Todo: substitution rules for pair
 
       -- Universe for sorts
       U : Ty Γ
@@ -41,6 +42,8 @@ module InCwF (cwf : CwF) where
       Π[] : (Π a B) [ σ ]T ≡ Π (coe (ap-Tm U[]) (a [ σ ]))
         (coe (ap-Ty (cong (_ ▷_) El[])) (B [ σ ↑ El a ]T))
       lam : Tm (Γ ▷ El a) B → Tm Γ (Π a B)
+      lam[] : (lam {a = a} {B = B} b) [ σ ] ≡[ ap-Tm Π[] ]
+        lam (coe (ap-Tmᶜ (cong (_ ▷_) El[]) refl) (b [ σ ↑ El a ]))
       app : Tm Γ (Π a B) → Tm (Γ ▷ El a) B
       Π-β : app (lam a) ≡ a
       Π-η : lam (app a) ≡ a
@@ -49,12 +52,15 @@ module InCwF (cwf : CwF) where
       Eq : Tm Γ A → Tm Γ A → Ty Γ
       Eq[] : (Eq a b) [ σ ]T ≡ Eq (a [ σ ]) (b [ σ ])
       Refl : (a ≡ b) true → Tm Γ (Eq a b)
+      Refl[] : ∀ {e}
+        → (Refl {a = a} {b = b} e) [ σ ] ≡[ ap-Tm Eq[] ] Refl (by (cong (_[ σ ]) (e .witness)))
       reflect : Tm Γ (Eq a b) → a ≡ b
 
       -- External Π
       Πᴱ : (S : Set) → (S → Ty Γ) → Ty Γ
       Πᴱ[] : (Πᴱ S T) [ σ ]T ≡ Πᴱ S (λ x → (T x) [ σ ]T)
       lamᴱ : ((s : S) → Tm Γ (T s)) → Tm Γ (Πᴱ S T)
+      lamᴱ[] : (lamᴱ s) [ σ ] ≡[ ap-Tm Πᴱ[] ] lamᴱ (λ x → s x [ σ ])
       appᴱ : Tm Γ (Πᴱ S T) → (s : S) → Tm Γ (T s)
       Πᴱ-β : appᴱ (lamᴱ s) ≡ s
       Πᴱ-η : lamᴱ (appᴱ a) ≡ a
