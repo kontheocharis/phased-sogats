@@ -8,6 +8,13 @@ import Theories.FO.SOGAT as FO-SOGAT
 import Theories.FO.PSOGAT as FO
 
 module PSOGAT-to-SOGAT (Φ : PhaseAlg) (sogat : SO.SOGAT-ToS) where
+  -- In here, we pretend to be in a two-level type theory where the
+  -- object theory is the SOGAT ToS, given by the `sogat` module parameter.
+  open SO.SOGAT-ToS sogat
+
+  -- What we will do is build a model of PSOGAT ToS in Psh(Φ, Ty), that is,
+  -- internal presheaves over the input phase algebra, valued in the object
+  -- universe.
 
   module P = FO.PSOGAT-ToS
   module S = FO-SOGAT.SOGAT-ToS
