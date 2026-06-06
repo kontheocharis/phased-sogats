@@ -4,128 +4,132 @@ open import Data.Product using (Σ-syntax; proj₁; proj₂; _,_)
 open import Data.Unit using (tt) renaming (⊤ to 𝟙)
 open import Utils hiding (⊤; _∧_)
 
-private variable
-  S : Set
-  t u v : S
+postulate
+  In-GAT-ToS : Prop
 
-record GAT-ToSˢ : Set₁ where
-  field
+module GAT-ToS (_ : In-GAT-ToS) where
+
+  postulate
     Ty : Set
     Tm : Ty → Set
 
-module in-GAT-ToSˢ (s : GAT-ToSˢ) where
-  open GAT-ToSˢ s
-
-  variable
+  private variable
+    S : Set
+    t u v : S
     A B C : Ty
     F G H : Tm A → Ty
     a b c : Tm A
     f g h : (x : Tm A) → Tm (F x)
-
-    P : Set
-    m n : P → Tm _
     X : S → Ty
+    fe : (s : S) → Tm (X s)
 
-  record GAT-ToSᶜ : Set₁ where
-    field
-      Σ : (A : Ty) → (Tm A → Ty) → Ty
-      pair-proj : (Σ[ a ∈ Tm A ] Tm (F a)) ≃ Tm (Σ A F)
-
-      `1 : Ty
-      unit-uniq : 𝟙 ≃ Tm `1
-
-      U : Ty
-      El : Tm U → Ty
-
-      Π : (a : Tm U) → (Tm (El a) → Ty) → Ty
-      lam-app : ((a : Tm (El a)) → Tm (F a)) ≃ Tm (Π a F)
-
-      Eq : Tm A → Tm A → Ty
-      refl-reflect : ((a ≡ b) true) ≃ Tm (Eq a b)
-
-      Πᴱ : (S : Set) → (S → Ty) → Ty
-      lam-appᴱ : ((s : S) → Tm (X s)) ≃ Tm (Πᴱ S X)
-
-
-    syntax Σ A (λ x → B) = x ∶ A ⨾ B
-    syntax Π A (λ x → B) = [ x ∶ A ] ⇒ B
-    syntax Πᴱ A (λ x → B) = [ x ∶ A ] ⇒ᴱ B
-
-    top : Tm `1
-    top = unit-uniq .to tt
-
+  postulate
+    Σ : (A : Ty) → (Tm A → Ty) → Ty
     pair : (a : Tm A) → Tm (F a) → Tm (Σ A F)
-    pair a b  = pair-proj .to (a , b)
-
     first : Tm (Σ A F) → Tm A
-    first p = pair-proj .from p .proj₁
-
     second : (p : Tm (Σ A F)) → Tm (F (first p))
-    second p = pair-proj .from p .proj₂
-
     first-pair : first (pair a b) ≡ a
-    first-pair = cong proj₁ (pair-proj .from-to (_ , _))
+  {-# REWRITE first-pair #-}
+  postulate
+    second-pair : second (pair a b) ≡ b
+  {-# REWRITE second-pair #-}
+  postulate
+    pair-η : pair (first a) (second a) ≡ a
+  {-# REWRITE pair-η #-}
 
-    _∙_ : Tm (Π a F) → (a : Tm (El a)) → Tm (F a)
-    _∙_ = lam-app .from
+  postulate
+    `1 : Ty
+    top : Tm `1
+    top-uniq : (x : Tm `1) → x ≡ top
 
+  postulate
+    U : Ty
+    El : Tm U → Ty
+
+  postulate
+    Π : (a : Tm U) → (Tm (El a) → Ty) → Ty
     lam : ((x : Tm (El a)) → Tm (F x)) → Tm (Π a F)
-    lam = lam-app .to
+    _∙_ : Tm (Π a F) → (x : Tm (El a)) → Tm (F x)
+    Π-β : (lam f) ∙ b ≡ f b
+  {-# REWRITE Π-β #-}
+  postulate
+    Π-η : lam (λ x → a ∙ x) ≡ a
+  {-# REWRITE Π-η #-}
 
-    _∙ᴱ_ : Tm (Πᴱ S X) → (s : S) → Tm (X s)
-    _∙ᴱ_ = lam-appᴱ .from
+  postulate
+    Eq : Tm A → Tm A → Ty
+    refl-reflect : ((a ≡ b) true) ≃ Tm (Eq a b)
 
+  postulate
+    Πᴱ : (S : Set) → (S → Ty) → Ty
     lamᴱ : ((s : S) → Tm (X s)) → Tm (Πᴱ S X)
-    lamᴱ = lam-appᴱ .to
+    _∙ᴱ_ : Tm (Πᴱ S X) → (s : S) → Tm (X s)
+    Πᴱ-β : (lamᴱ fe) ∙ᴱ t ≡ fe t
+  {-# REWRITE Πᴱ-β #-}
+  postulate
+    Πᴱ-η : lamᴱ (λ s → a ∙ᴱ s) ≡ a
+  {-# REWRITE Πᴱ-η #-}
 
-    lamᴱ-appᴱ : lamᴱ m ∙ᴱ u ≡ m u
-    lamᴱ-appᴱ = ap-$ (lam-appᴱ .from-to _) _
+  syntax Σ A (λ x → B) = x ∶ A ⨾ B
+  syntax Π A (λ x → B) = [ x ∶ A ] ⇒ B
+  syntax Πᴱ A (λ x → B) = [ x ∶ A ] ⇒ᴱ B
 
-    lam-app∙ : lam f ∙ b ≡ f b
-    lam-app∙ = ap-$ (lam-app .from-to _) _
+  pair-proj : (Σ[ a ∈ Tm A ] Tm (F a)) ≃ Tm (Σ A F)
+  pair-proj .to (a , b) = pair a b
+  pair-proj .from p = first p , second p
+  pair-proj .to-from _ = refl
+  pair-proj .from-to _ = refl
 
-    infixr 3 _⇒_
-    _⇒_ : Tm U → Ty → Ty
-    A ⇒ B = Π A (λ _ → B)
+  unit-uniq : 𝟙 ≃ Tm `1
+  unit-uniq .to _ = top
+  unit-uniq .from _ = tt
+  unit-uniq .to-from x = sym (top-uniq x)
+  unit-uniq .from-to _ = refl
 
-    Iso : Tm U → Tm U → Ty
-    Iso A B =
-      from ∶ A ⇒ El B ⨾
-      to ∶ B ⇒ El A ⨾
-      from-to ∶ [ x ∶ B ] ⇒ Eq (from ∙ (to ∙ x)) x ⨾
-      to-from ∶ [ x ∶ A ] ⇒ Eq (to ∙ (from ∙ x)) x ⨾
-      `1
+  lam-app : ((x : Tm (El a)) → Tm (F x)) ≃ Tm (Π a F)
+  lam-app .to = lam
+  lam-app .from = _∙_
+  lam-app .to-from _ = refl
+  lam-app .from-to _ = refl
 
-    iso-fwd : Tm (Iso a b) → Tm (El a) → Tm (El b)
-    iso-fwd i x = first i ∙ x
+  lam-appᴱ : ((s : S) → Tm (X s)) ≃ Tm (Πᴱ S X)
+  lam-appᴱ .to = lamᴱ
+  lam-appᴱ .from = _∙ᴱ_
+  lam-appᴱ .to-from _ = refl
+  lam-appᴱ .from-to _ = refl
 
-    iso-bwd : Tm (Iso a b) → Tm (El b) → Tm (El a)
-    iso-bwd i x = first (second i) ∙ x
+  infixr 3 _⇒_
+  _⇒_ : Tm U → Ty → Ty
+  A ⇒ B = Π A (λ _ → B)
 
-    iso-fwd-bwd : iso-fwd a (iso-bwd a c) ≡ c
-    iso-fwd-bwd {a = i} {c = x} = refl-reflect .from (first (second (second i)) ∙ x) .witness
+  Iso : Tm U → Tm U → Ty
+  Iso A B =
+    from ∶ A ⇒ El B ⨾
+    to ∶ B ⇒ El A ⨾
+    from-to ∶ [ x ∶ B ] ⇒ Eq (from ∙ (to ∙ x)) x ⨾
+    to-from ∶ [ x ∶ A ] ⇒ Eq (to ∙ (from ∙ x)) x ⨾
+    `1
 
-    iso-bwd-fwd : iso-bwd a (iso-fwd a c) ≡ c
-    iso-bwd-fwd {a = i} {c = x} = refl-reflect .from (first (second (second (second i))) ∙ x) .witness
+  iso-fwd : Tm (Iso a b) → Tm (El a) → Tm (El b)
+  iso-fwd i x = first i ∙ x
 
-    iso : (fwd : Tm (El a) → Tm (El b)) (bwd : Tm (El b) → Tm (El a))
-          → ((x : Tm (El b)) → fwd (bwd x) ≡ x)
-          → ((x : Tm (El a)) → bwd (fwd x) ≡ x)
-          → Tm (Iso a b)
-    iso fwd bwd fb bf =
-      pair (lam fwd) (pair (lam bwd)
-        (pair (lam λ x → refl-reflect .to
-          (by (trans (cong (lam fwd ∙_) lam-app∙)
-          (trans lam-app∙ (fb x)))))
-        (pair (lam λ x → refl-reflect .to
-          (by (trans (cong (lam bwd ∙_) lam-app∙)
-          (trans lam-app∙ (bf x)))))
-      top)))
+  iso-bwd : Tm (Iso a b) → Tm (El b) → Tm (El a)
+  iso-bwd i x = first (second i) ∙ x
 
-record GAT-ToS : Set₁ where
-  field
-    gat-sorts : GAT-ToSˢ
-  open GAT-ToSˢ gat-sorts public
-  field
-    gat-ctors : in-GAT-ToSˢ.GAT-ToSᶜ gat-sorts
-  open in-GAT-ToSˢ.GAT-ToSᶜ gat-ctors public
+  iso-fwd-bwd : (i : Tm (Iso a b)) (x : Tm (El b))
+              → iso-fwd i (iso-bwd i x) ≡ x
+  iso-fwd-bwd i x = refl-reflect .from (first (second (second i)) ∙ x) .witness
+
+  iso-bwd-fwd : (i : Tm (Iso a b)) (x : Tm (El a))
+              → iso-bwd i (iso-fwd i x) ≡ x
+  iso-bwd-fwd i x = refl-reflect .from (first (second (second (second i))) ∙ x) .witness
+
+  iso : (fwd : Tm (El a) → Tm (El b)) (bwd : Tm (El b) → Tm (El a))
+        → ((x : Tm (El b)) → fwd (bwd x) ≡ x)
+        → ((x : Tm (El a)) → bwd (fwd x) ≡ x)
+        → Tm (Iso a b)
+  iso fwd bwd fb bf =
+    pair (lam fwd) (pair (lam bwd)
+      (pair (lam λ x → refl-reflect .to (by (fb x)))
+      (pair (lam λ x → refl-reflect .to (by (bf x)))
+    top)))
