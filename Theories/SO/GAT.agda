@@ -1,27 +1,17 @@
-module ToS where
+module Theories.SO.GAT where
 
-open import Data.Product using (Σ-syntax; proj₁; proj₂; _,_; _×_)
+open import Data.Product using (Σ-syntax; proj₁; proj₂; _,_)
 open import Data.Unit using (tt) renaming (⊤ to 𝟙)
 open import Utils hiding (⊤; _∧_)
+
+private variable
+  S : Set
+  t u v : S
 
 record GAT-ToSˢ : Set₁ where
   field
     Ty : Set
     Tm : Ty → Set
-
-variable
-  S : Set
-  t u v : S
-
-record PhaseAlg : Set₁ where
-  field
-    Phase : Set
-    _∧_ : Phase → Phase → Phase
-    ⊤ : Phase
-    ∧assoc : (t ∧ u) ∧ v ≡ t ∧ (u ∧ v)
-    ∧comm : t ∧ u ≡ u ∧ t
-    ∧idemp : t ∧ t ≡ t
-    ∧⊤ : t ∧ ⊤ ≡ t
 
 module in-GAT-ToSˢ (s : GAT-ToSˢ) where
   open GAT-ToSˢ s
@@ -35,7 +25,6 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
     P : Set
     m n : P → Tm _
     X : S → Ty
-
 
   record GAT-ToSᶜ : Set₁ where
     field
@@ -133,54 +122,6 @@ module in-GAT-ToSˢ (s : GAT-ToSˢ) where
           (trans lam-app∙ (bf x)))))
       top)))
 
-  record SOGAT-ToSᶜ (gat : GAT-ToSᶜ) : Set₁ where
-    open GAT-ToSᶜ gat
-    field
-      Uᴿ : Ty
-      elᴿ : Tm Uᴿ → Tm U
-
-      Πᴿ : (a : Tm Uᴿ) → (Tm (El (elᴿ a)) → Tm U) → Tm U
-      lam-appᴿ : ((a : Tm (El (elᴿ a))) → Tm (El (f a))) ≃ Tm (El (Πᴿ a f))
-
-    syntax Πᴿ a (λ x → B) = [ x ∶ a ] ⇒ᴿ B
-
-    infixr 3 _⇒ᴿ_
-    _⇒ᴿ_ : Tm Uᴿ → Tm U → Tm U
-    A ⇒ᴿ B = Πᴿ A (λ _ → B)
-
-    _∙ᴿ_ : Tm (El (Πᴿ a f)) → (x : Tm (El (elᴿ a))) → Tm (El (f x))
-    _∙ᴿ_ = lam-appᴿ .from
-
-    lamᴿ : ((x : Tm (El (elᴿ a))) → Tm (El (f x))) → Tm (El (Πᴿ a f))
-    lamᴿ = lam-appᴿ .to
-
-
-  record PSOGAT-ToSᶜ (Φ : PhaseAlg) (gat : GAT-ToSᶜ) (sogat : SOGAT-ToSᶜ gat) : Set₁ where
-    open PhaseAlg Φ
-    open GAT-ToSᶜ gat
-    open SOGAT-ToSᶜ sogat
-    field
-
-      In : Phase → Set
-      In-prop : (x y : In t) → x ≡ y
-      in⊤ : In ⊤
-      In-and-proj : (In t × In u) ≃ In (t ∧ u)
-
-      Πᴾ : (p : Phase) → Tm U → Tm U
-      Πᴾᴿ : (p : Phase) → Tm Uᴿ → Tm Uᴿ
-      ↓↑ : (In t → Tm (El a)) ≃ Tm (El (Πᴾ t a))
-      ↓↑ᴿ : (In t → Tm (El (elᴿ a))) ≃ Tm (El (elᴿ (Πᴾᴿ t a)))
-
-    In-and : In t → In u → In (t ∧ u)
-    In-and x y = In-and-proj .to (x , y)
-
-    In-fst : In (t ∧ u) → In t
-    In-fst z = In-and-proj .from z .proj₁
-
-    In-snd : In (t ∧ u) → In u
-    In-snd z = In-and-proj .from z .proj₂
-
-
 record GAT-ToS : Set₁ where
   field
     gat-sorts : GAT-ToSˢ
@@ -188,19 +129,3 @@ record GAT-ToS : Set₁ where
   field
     gat-ctors : in-GAT-ToSˢ.GAT-ToSᶜ gat-sorts
   open in-GAT-ToSˢ.GAT-ToSᶜ gat-ctors public
-
-record SOGAT-ToS : Set₁ where
-  field
-    gat : GAT-ToS
-  open GAT-ToS gat public
-  field
-    sogat-ctors : in-GAT-ToSˢ.SOGAT-ToSᶜ gat-sorts gat-ctors
-  open in-GAT-ToSˢ.SOGAT-ToSᶜ sogat-ctors public
-
-record PSOGAT-ToS (Φ : PhaseAlg) : Set₁ where
-  field
-    sogat : SOGAT-ToS
-  open SOGAT-ToS sogat public
-  field
-    psogat-ctors : in-GAT-ToSˢ.PSOGAT-ToSᶜ gat-sorts Φ gat-ctors sogat-ctors
-  open in-GAT-ToSˢ.PSOGAT-ToSᶜ psogat-ctors public

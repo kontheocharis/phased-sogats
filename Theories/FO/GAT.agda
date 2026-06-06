@@ -2,6 +2,8 @@ module Theories.FO.GAT where
 
 open import Utils
 open import Theories.FO.CwF
+open import Data.Product using (Σ-syntax)
+open import Data.Unit renaming (⊤ to 𝟙)
 
 module InCwF (cwf : CwF) where
   open CwF cwf
@@ -16,19 +18,13 @@ module InCwF (cwf : CwF) where
       -- Unit
       `1 : Ty Γ
       `1[] : `1 {Γ = Δ} [ σ ]T ≡ `1
-      top : Tm Γ `1
-      top[] : top [ σ ] ≡[ ap-Tm `1[] ] top
-      `1-η : a ≡ top
+      unit-uniq : 𝟙 ≃ Tm Γ `1
+      top[] : unit-uniq .to tt [ σ ] ≡[ ap-Tm `1[] ] unit-uniq .to tt
 
       -- Σ
       Σ : (A : Ty Γ) → Ty (Γ ▷ A) → Ty Γ
       Σ[] : (Σ A B) [ σ ]T ≡ Σ (A [ σ ]T) (B [ σ ↑ A ]T)
-      pair : (a : Tm Γ A) → Tm Γ (B [ < a > ]T) → Tm Γ (Σ A B)
-      fst : Tm Γ (Σ A B) → Tm Γ A
-      snd : (s : Tm Γ (Σ A B)) → Tm Γ (B [ < fst s > ]T)
-      Σ-β₁ : fst (pair a b) ≡ a
-      Σ-β₂ : snd (pair a b) ≡[ ap-Tm (cong (λ x → B [ < x > ]T) Σ-β₁) ] b
-      Σ-η : pair (fst a) (snd a) ≡ a
+      pair-proj : Σ[ a ∈ Tm Γ A ] Tm Γ (B [ < a > ]T) ≃ Tm Γ (Σ A B)
       -- @@Todo: substitution rules for pair
 
       -- Universe for sorts
@@ -41,29 +37,22 @@ module InCwF (cwf : CwF) where
       Π : (a : Tm Γ U) → Ty (Γ ▷ El a) → Ty Γ
       Π[] : (Π a B) [ σ ]T ≡ Π (coe (ap-Tm U[]) (a [ σ ]))
         (coe (ap-Ty (cong (_ ▷_) El[])) (B [ σ ↑ El a ]T))
-      lam : Tm (Γ ▷ El a) B → Tm Γ (Π a B)
-      lam[] : (lam {a = a} {B = B} b) [ σ ] ≡[ ap-Tm Π[] ]
-        lam (coe (ap-Tmᶜ (cong (_ ▷_) El[]) refl) (b [ σ ↑ El a ]))
-      app : Tm Γ (Π a B) → Tm (Γ ▷ El a) B
-      Π-β : app (lam a) ≡ a
-      Π-η : lam (app a) ≡ a
+      lam-app : Tm (Γ ▷ El a) B ≃ Tm Γ (Π a B)
+      lam[] : (lam-app {a = a} {B = B} .to b) [ σ ] ≡[ ap-Tm Π[] ]
+        lam-app .to (coe (ap-Tmᶜ (cong (_ ▷_) El[]) refl) (b [ σ ↑ El a ]))
 
       -- Equality
       Eq : Tm Γ A → Tm Γ A → Ty Γ
       Eq[] : (Eq a b) [ σ ]T ≡ Eq (a [ σ ]) (b [ σ ])
-      Refl : (a ≡ b) true → Tm Γ (Eq a b)
+      refl-reflect : ((a ≡ b) true) ≃ Tm Γ (Eq a b)
       Refl[] : ∀ {e}
-        → (Refl {a = a} {b = b} e) [ σ ] ≡[ ap-Tm Eq[] ] Refl (by (cong (_[ σ ]) (e .witness)))
-      reflect : Tm Γ (Eq a b) → a ≡ b
+        → (refl-reflect {a = a} {b = b} .to e) [ σ ] ≡[ ap-Tm Eq[] ] refl-reflect .to (by (cong (_[ σ ]) (e .witness)))
 
       -- External Π
       Πᴱ : (S : Set) → (S → Ty Γ) → Ty Γ
       Πᴱ[] : (Πᴱ S T) [ σ ]T ≡ Πᴱ S (λ x → (T x) [ σ ]T)
-      lamᴱ : ((s : S) → Tm Γ (T s)) → Tm Γ (Πᴱ S T)
-      lamᴱ[] : (lamᴱ s) [ σ ] ≡[ ap-Tm Πᴱ[] ] lamᴱ (λ x → s x [ σ ])
-      appᴱ : Tm Γ (Πᴱ S T) → (s : S) → Tm Γ (T s)
-      Πᴱ-β : appᴱ (lamᴱ s) ≡ s
-      Πᴱ-η : lamᴱ (appᴱ a) ≡ a
+      lam-appᴱ : ((s : S) → Tm Γ (T s)) ≃ Tm Γ (Πᴱ S T)
+      lamᴱ[] : (lam-appᴱ .to s) [ σ ] ≡[ ap-Tm Πᴱ[] ] lam-appᴱ .to (λ x → s x [ σ ])
 
 record GAT-ToS : Set₁ where
   field

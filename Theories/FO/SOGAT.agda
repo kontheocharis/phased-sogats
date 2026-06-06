@@ -18,11 +18,8 @@ module InGAT (gat : GAT-ToS) where
       elᴿ[] : elᴿ a [ σ ] ≡[ ap-Tm U[] ] elᴿ (coe (ap-Tm Uᴿ[]) (a [ σ ]))
 
       Πᴿ : (a : Tm Γ Uᴿ) → Tm (Γ ▷ El (elᴿ a)) U → Tm Γ U
-      lamᴿ : Tm (Γ ▷ El (elᴿ a)) (El Bu) → Tm Γ (El (Πᴿ a Bu))
-      appᴿ : Tm Γ (El (Πᴿ a Bu)) → Tm (Γ ▷ El (elᴿ a)) (El Bu)
+      lam-appᴿ : Tm (Γ ▷ El (elᴿ a)) (El Bu) ≃ Tm Γ (El (Πᴿ a Bu))
       -- @@Todo: substitution rules for ΠR, lam
-      Πᴿ-β : appᴿ (lamᴿ a) ≡ a
-      Πᴿ-η : lamᴿ (appᴿ a) ≡ a
 
 record SOGAT-ToS : Set₁ where
   field
