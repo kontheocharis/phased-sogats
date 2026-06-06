@@ -24,14 +24,18 @@ module InSOGAT (Φ : PhaseAlg) (sogat : SOGAT-ToS) where
       in⊤ : Tm Γ (In ⊤)
       in-and-proj : (Tm Γ (In t) × Tm Γ (In u)) ≃ Tm Γ (In (t ∧ u))
 
-      -- Open modality for U
-      Πᴾ : Phase → Tm Γ U → Tm Γ U
-      ↑↓ : Tm (Γ ▷ In t) ((El Au) [ p ]T) ≃ Tm Γ (El (Πᴾ t Au))
+      -- Open modality for all sorts
+
+      Πᴾ : (t : Phase) → Ty (Γ ▷ In t) → Ty Γ
+      ↑↓ : Tm (Γ ▷ In t) A ≃ Tm Γ (Πᴾ t A)
       -- @@Todo: substitution
 
-      -- Open modality for UR
-      Πᴾᴿ : Phase → Tm Γ Uᴿ → Tm Γ Uᴿ
-      ↑↓ᴿ : Tm (Γ ▷ In t) (El (elᴿ AuR) [ p ]T) ≃ Tm Γ (El (elᴿ (Πᴾᴿ t AuR)))
+      Πᴾᵁ : (t : Phase) → Tm (Γ ▷ In t) U → Tm Γ U
+      ↑↓ᵁ : Tm (Γ ▷ In t) (El Au) ≃ Tm Γ (El (Πᴾᵁ t Au))
+      -- @@Todo: substitution
+
+      Πᴾᴿ : (t : Phase) → Tm (Γ ▷ In t) Uᴿ → Tm Γ Uᴿ
+      ↑↓ᴿ : Tm (Γ ▷ In t) (El (elᴿ AuR)) ≃ Tm Γ (El (elᴿ (Πᴾᴿ t AuR)))
       -- @@Todo: substitution
 
 record PSOGAT-ToS (Φ : PhaseAlg) : Set₁ where

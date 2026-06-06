@@ -129,5 +129,7 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (sogat : SO.SOGAT-ToS) where
   fo-psogat .P.psogat-ctors .Pᶜ.in-and-proj = {!!}
   fo-psogat .P.psogat-ctors .Pᶜ.Πᴾ = {!!}
   fo-psogat .P.psogat-ctors .Pᶜ.↑↓ = {!!}
+  fo-psogat .P.psogat-ctors .Pᶜ.Πᴾᵁ = {!!}
+  fo-psogat .P.psogat-ctors .Pᶜ.↑↓ᵁ = {!!}
   fo-psogat .P.psogat-ctors .Pᶜ.Πᴾᴿ = {!!}
   fo-psogat .P.psogat-ctors .Pᶜ.↑↓ᴿ = {!!}

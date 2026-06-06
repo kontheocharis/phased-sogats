@@ -12,8 +12,10 @@ module in-SOGAT (Φ : PhaseAlg) (sogat : SOGAT-ToS) where
 
   variable
     t u v : Phase
-    A : Ty
+    A B : Ty
     a : Tm A
+    F : Tm A → Ty
+    f : Tm A → Tm B
 
   record PSOGAT-ToSᶜ : Set₁ where
     field
@@ -22,10 +24,16 @@ module in-SOGAT (Φ : PhaseAlg) (sogat : SOGAT-ToS) where
       in⊤ : Tm (In ⊤)
       In-and-proj : (Tm (In t) × Tm (In u)) ≃ Tm (In (t ∧ u))
 
-      Πᴾ : (p : Phase) → Tm U → Tm U
-      Πᴾᴿ : (p : Phase) → Tm Uᴿ → Tm Uᴿ
-      ↓↑ : (Tm (In t) → Tm (El a)) ≃ Tm (El (Πᴾ t a))
-      ↓↑ᴿ : (Tm (In t) → Tm (El (elᴿ a))) ≃ Tm (El (elᴿ (Πᴾᴿ t a)))
+      -- Open modality for all sorts
+
+      Πᴾ : (t : Phase) (F : Tm (In t) → Ty) → Ty
+      ↓↑ : ((x : Tm (In t)) → Tm (F x)) ≃ Tm (Πᴾ t F)
+
+      Πᴾᵁ : (t : Phase) (f : Tm (In t) → Tm U) → Tm U
+      ↓↑ᵁ : ((x : Tm (In t)) → Tm (El (f x))) ≃ Tm (El (Πᴾᵁ t f))
+
+      Πᴾᴿ : (t : Phase) (f : Tm (In t) → Tm Uᴿ) → Tm Uᴿ
+      ↓↑ᴿ : ((x : Tm (In t)) → Tm (El (elᴿ (f x)))) ≃ Tm (El (elᴿ (Πᴾᴿ t f)))
 
     In-and : Tm (In t) → Tm (In u) → Tm (In (t ∧ u))
     In-and x y = In-and-proj .to (x , y)
