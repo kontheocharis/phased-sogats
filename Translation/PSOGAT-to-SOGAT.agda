@@ -73,6 +73,40 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   top-uniqᴹ : {γ γ' : Tm `1} → γ ≡ γ'
   top-uniqᴹ {γ} {γ'} = trans (top-uniq γ) (sym (top-uniq γ'))
 
+  opaque
+    unfolding coe
+    rest-nat : (A : Tyᴹ Γ) {γ γ' : Tm (Conᴹ.obj Γ p)} (e : γ ≡ γ') {a : Tm (A .Tyᴹ.fib γ)}
+      → A .Tyᴹ.rest le γ a
+        ≡[ cong Tm (cong (A .Tyᴹ.fib) (cong (Conᴹ.rest Γ le) e)) ]
+        A .Tyᴹ.rest le γ' (coe (cong Tm (cong (A .Tyᴹ.fib) e)) a)
+    rest-nat A refl = refl
+
+    Subᴹ≡ : {σ τ : Subᴹ Δ Γ}
+      → (∀ {p} (γ : Tm (Conᴹ.obj Δ p))
+      → σ .Subᴹ.map γ ≡ τ .Subᴹ.map γ)
+      → σ ≡ τ
+    Subᴹ≡ {σ = σ} {τ = τ} m with ifunext (λ p → funext (m {p}))
+    ... | refl = refl
+
+    Tmᴹ≡ : {a b : Tmᴹ Γ A}
+      → (∀ {p} (γ : Tm (Conᴹ.obj Γ p)) → a .Tmᴹ.at γ ≡ b .Tmᴹ.at γ)
+      → a ≡ b
+    Tmᴹ≡ {a = a} {b = b} m with ifunext (λ p → funext (m {p}))
+    ... | refl = refl
+
+    Tyᴹ≡ : {A B : Tyᴹ Γ}
+      → (e-fib : ∀ {p} (γ : Tm (Conᴹ.obj Γ p)) → A .Tyᴹ.fib γ ≡ B .Tyᴹ.fib γ)
+      → (∀ {p q} (le : q ≤ p) (γ : Tm (Conᴹ.obj Γ p)) (a : Tm (A .Tyᴹ.fib γ))
+      → A .Tyᴹ.rest le γ a
+          ≡[ cong Tm (e-fib (Conᴹ.rest Γ le γ)) ]
+        B .Tyᴹ.rest le γ (coe (cong Tm (e-fib γ)) a))
+      → A ≡ B
+    Tyᴹ≡ = {!!}
+
+    ap-at : (e1 : A ≡ B) (e2 : a ≡[ cong (Tmᴹ Γ) e1 ] b) (γ : Tm (Conᴹ.obj Γ p))
+      → a .Tmᴹ.at γ ≡[ cong (λ T → Tm (T .Tyᴹ.fib γ)) e1 ] b .Tmᴹ.at γ
+    ap-at refl refl γ = refl
+
   cwfᴹ : FO-CwF.CwF
   cwfᴹ .C.sorts .Cˢ.Con = Conᴹ
   cwfᴹ .C.sorts .Cˢ.Sub = Subᴹ
@@ -91,13 +125,14 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest-⊙ = top-uniqᴹ
   cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.map _ = top
   cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.nat = top-uniqᴹ
-  cwfᴹ .C.ctors .Cᶜ.∃!ε = {!!}
+  cwfᴹ .C.ctors .Cᶜ.∃!ε = Subᴹ≡ (λ _ → top-uniqᴹ)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.fib γ = A .Tyᴹ.fib (σ .Subᴹ.map γ)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest le γ a =
     coe (cong Tm (cong (A .Tyᴹ.fib) (σ .Subᴹ.nat)))
       (A .Tyᴹ.rest le (σ .Subᴹ.map γ) a)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest-id = splitl (A .Tyᴹ.rest-id)
-  cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest-⊙ = {!!}
+  cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest-⊙ =
+    splitl (splitr (transᴰ (A .Tyᴹ.rest-⊙) (rest-nat A (σ .Subᴹ.nat))))
   cwfᴹ .C.ctors .Cᶜ.[id]T = aux
     where
     opaque
@@ -128,9 +163,9 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.map γ = pair (σ .Subᴹ.map γ) (a .Tmᴹ.at γ)
   cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.nat = ap-pair (σ .Subᴹ.nat) (a .Tmᴹ.nat)
   cwfᴹ .C.ctors .Cᶜ.p∘, = refl
-  cwfᴹ .C.ctors .Cᶜ.,∘ = {!!}
+  cwfᴹ .C.ctors .Cᶜ.,∘ {σ = σ} {a = a} {τ = τ} = Subᴹ≡ {!!}
   cwfᴹ .C.ctors .Cᶜ.p,q = refl
-  cwfᴹ .C.ctors .Cᶜ.q[,] = {!!}
+  cwfᴹ .C.ctors .Cᶜ.q[,] = Tmᴹ≡ λ γ → {!!}
 
   gatᴹ : FO-GAT.GAT-ToS
   gatᴹ .G.cwf = cwfᴹ
