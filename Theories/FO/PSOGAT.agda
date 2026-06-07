@@ -38,7 +38,7 @@ module InSOGAT (Φ : PhaseAlg) (sogat : SOGAT-ToS) where
       ↑↓ᴿ : Tm (Γ ▷ In t) (El (elᴿ AuR)) ≃ Tm Γ (El (elᴿ (Πᴾᴿ t AuR)))
       -- @@Todo: substitution
 
-record PSOGAT-ToS (Φ : PhaseAlg) : Set₁ where
+record PSOGAT-ToS (Φ : PhaseAlg) : Set₂ where
   field
     sogat : SOGAT-ToS
   open SOGAT-ToS sogat public

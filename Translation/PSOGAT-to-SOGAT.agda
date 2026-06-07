@@ -8,13 +8,14 @@ import Theories.FO.SOGAT as FO-SOGAT
 import Theories.FO.PSOGAT as FO
 open import Utils hiding (⊤; _∧_)
 open import Data.Unit using (tt) renaming (⊤ to 𝟙)
+open import Data.Product using (Σ-syntax; proj₁; proj₂) renaming (_,_ to _,,_)
 
 module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   open SO.SOGAT-ToS s
   open InPhaseAlg Φ
 
-  -- What we will do is build a model of PSOGAT ToS in Psh(Φ, Ty), that is,
-  -- presheaves over the input phase algebra, valued in the object universe.
+  -- What we will do is build a model of PSOGAT ToS in Psh(Φ) with *the object
+  -- universe* for Ty/Tm.
 
   module P = FO.PSOGAT-ToS
   module S = FO-SOGAT.SOGAT-ToS
@@ -30,29 +31,29 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     le : q ≤ p
     le' : r ≤ q
 
-  record Conᴹ : Set where
+  record Conᴹ : Set₁ where
     field
-      obj  : Phase → Ty
-      rest : q ≤ p → Tm (obj p) → Tm (obj q)
-      rest-id : {γ : Tm (obj p)} → rest ≤-refl γ ≡ γ
-      rest-⊙ : {γ : Tm (obj p)} → rest (le' ⊙ le) γ ≡ rest le' (rest le γ)
+      obj  : Phase → Set
+      rest : q ≤ p → obj p → obj q
+      rest-id : {γ : obj p} → rest ≤-refl γ ≡ γ
+      rest-⊙ : {γ : obj p} → rest (le' ⊙ le) γ ≡ rest le' (rest le γ)
 
   variable
     Γ Δ Θ : Conᴹ
 
   record Subᴹ (Δ Γ : Conᴹ) : Set where
     field
-      map : Tm (Conᴹ.obj Δ p) → Tm (Conᴹ.obj Γ p)
+      map : Conᴹ.obj Δ p → Conᴹ.obj Γ p
       nat : ∀ {δ} → Conᴹ.rest Γ le (map δ) ≡ map (Conᴹ.rest Δ le δ)
 
   record Tyᴹ (Γ : Conᴹ) : Set where
     field
-      fib  : Tm (Conᴹ.obj Γ p) → Ty
-      rest : (le : q ≤ p) (γ : Tm (Conᴹ.obj Γ p))
+      fib  : Conᴹ.obj Γ p → Ty
+      rest : (le : q ≤ p) (γ : Conᴹ.obj Γ p)
         → Tm (fib γ) → Tm (fib (Conᴹ.rest Γ le γ))
-      rest-id : ∀ {γ : Tm (Conᴹ.obj Γ p)} {a}
+      rest-id : ∀ {γ : Conᴹ.obj Γ p} {a}
         → rest ≤-refl γ a ≡[ cong Tm (cong fib (Conᴹ.rest-id Γ {γ = γ})) ] a
-      rest-⊙ : ∀ {γ : Tm (Conᴹ.obj Γ p)} {a}
+      rest-⊙ : ∀ {γ : Conᴹ.obj Γ p} {a}
         → rest (le' ⊙ le) γ a
             ≡[ cong Tm (cong fib (Conᴹ.rest-⊙ Γ {γ = γ})) ]
           rest le' (Conᴹ.rest Γ le γ) (rest le γ a)
@@ -62,50 +63,52 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
 
   record Tmᴹ (Γ : Conᴹ) (A : Tyᴹ Γ) : Set where
     field
-      at  : (γ : Tm (Conᴹ.obj Γ p)) → Tm (Tyᴹ.fib A γ)
+      at  : (γ : Conᴹ.obj Γ p) → Tm (Tyᴹ.fib A γ)
       nat : ∀ {γ} → Tyᴹ.rest A le γ (at γ) ≡ at (Conᴹ.rest Γ le γ)
 
   variable
     σ τ θ : Subᴹ Δ Γ
     a b   : Tmᴹ Γ A
-    γ δ   : Tm (Conᴹ.obj Γ p)
+    γ δ   : Conᴹ.obj Γ p
 
   top-uniqᴹ : {γ γ' : Tm `1} → γ ≡ γ'
   top-uniqᴹ {γ} {γ'} = trans (top-uniq γ) (sym (top-uniq γ'))
 
   opaque
     unfolding coe
-    rest-nat : (A : Tyᴹ Γ) {γ γ' : Tm (Conᴹ.obj Γ p)} (e : γ ≡ γ') {a : Tm (A .Tyᴹ.fib γ)}
+    rest-nat : (A : Tyᴹ Γ) {γ γ' : Conᴹ.obj Γ p} (e : γ ≡ γ') {a : Tm (A .Tyᴹ.fib γ)}
       → A .Tyᴹ.rest le γ a
         ≡[ cong Tm (cong (A .Tyᴹ.fib) (cong (Conᴹ.rest Γ le) e)) ]
         A .Tyᴹ.rest le γ' (coe (cong Tm (cong (A .Tyᴹ.fib) e)) a)
     rest-nat A refl = refl
 
     Subᴹ≡ : {σ τ : Subᴹ Δ Γ}
-      → (∀ {p} (γ : Tm (Conᴹ.obj Δ p))
+      → (∀ {p} (γ : Conᴹ.obj Δ p)
       → σ .Subᴹ.map γ ≡ τ .Subᴹ.map γ)
       → σ ≡ τ
     Subᴹ≡ {σ = σ} {τ = τ} m with ifunext (λ p → funext (m {p}))
     ... | refl = refl
 
     Tmᴹ≡ : {a b : Tmᴹ Γ A}
-      → (∀ {p} (γ : Tm (Conᴹ.obj Γ p)) → a .Tmᴹ.at γ ≡ b .Tmᴹ.at γ)
+      → (∀ {p} (γ : Conᴹ.obj Γ p) → a .Tmᴹ.at γ ≡ b .Tmᴹ.at γ)
       → a ≡ b
     Tmᴹ≡ {a = a} {b = b} m with ifunext (λ p → funext (m {p}))
     ... | refl = refl
 
     Tyᴹ≡ : {A B : Tyᴹ Γ}
-      → (e-fib : ∀ {p} (γ : Tm (Conᴹ.obj Γ p)) → A .Tyᴹ.fib γ ≡ B .Tyᴹ.fib γ)
-      → (∀ {p q} (le : q ≤ p) (γ : Tm (Conᴹ.obj Γ p)) (a : Tm (A .Tyᴹ.fib γ))
+      → (e-fib : ∀ {p} (γ : Conᴹ.obj Γ p) → A .Tyᴹ.fib γ ≡ B .Tyᴹ.fib γ)
+      → (∀ {p q} (le : q ≤ p) (γ : Conᴹ.obj Γ p) (a : Tm (A .Tyᴹ.fib γ))
       → A .Tyᴹ.rest le γ a
           ≡[ cong Tm (e-fib (Conᴹ.rest Γ le γ)) ]
         B .Tyᴹ.rest le γ (coe (cong Tm (e-fib γ)) a))
       → A ≡ B
     Tyᴹ≡ = {!!}
 
-    ap-at : (e1 : A ≡ B) (e2 : a ≡[ cong (Tmᴹ Γ) e1 ] b) (γ : Tm (Conᴹ.obj Γ p))
+
+    ap-at : (e1 : A ≡ B) (e2 : a ≡[ cong (Tmᴹ Γ) e1 ] b) (γ : Conᴹ.obj Γ p)
       → a .Tmᴹ.at γ ≡[ cong (λ T → Tm (T .Tyᴹ.fib γ)) e1 ] b .Tmᴹ.at γ
     ap-at refl refl γ = refl
+
 
   cwfᴹ : FO-CwF.CwF
   cwfᴹ .C.sorts .Cˢ.Con = Conᴹ
@@ -119,13 +122,13 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   cwfᴹ .C.ctors .Cᶜ.id∘ = refl
   cwfᴹ .C.ctors .Cᶜ.∘id = refl
   cwfᴹ .C.ctors .Cᶜ.assoc = refl
-  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.obj _ = `1
-  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest _ _ = top
-  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest-id = top-uniqᴹ
-  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest-⊙ = top-uniqᴹ
-  cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.map _ = top
-  cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.nat = top-uniqᴹ
-  cwfᴹ .C.ctors .Cᶜ.∃!ε = Subᴹ≡ (λ _ → top-uniqᴹ)
+  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.obj _ = 𝟙
+  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest _ _ = tt
+  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest-id = refl
+  cwfᴹ .C.ctors .Cᶜ.∙ .Conᴹ.rest-⊙ = refl
+  cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.map _ = tt
+  cwfᴹ .C.ctors .Cᶜ.ε .Subᴹ.nat = refl
+  cwfᴹ .C.ctors .Cᶜ.∃!ε = Subᴹ≡ (λ _ → refl)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.fib γ = A .Tyᴹ.fib (σ .Subᴹ.map γ)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest le γ a =
     coe (cong Tm (cong (A .Tyᴹ.fib) (σ .Subᴹ.nat)))
@@ -139,7 +142,7 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       unfolding coe
       aux : cwfᴹ .C.ctors .Cᶜ._[_]T A (cwfᴹ .C.ctors .Cᶜ.id) ≡ A
       aux = refl
-  cwfᴹ .C.ctors .Cᶜ.[∘]T = {!!}
+  cwfᴹ .C.ctors .Cᶜ.[∘]T = Tyᴹ≡ (λ _ → refl) λ le γ a → {!!}
   cwfᴹ .C.ctors .Cᶜ._[_] a σ .Tmᴹ.at γ = a .Tmᴹ.at (σ .Subᴹ.map γ)
   cwfᴹ .C.ctors .Cᶜ._[_] {A = A} a σ .Tmᴹ.nat = trans
     (cong (coe (cong Tm (cong (A .Tyᴹ.fib) (σ .Subᴹ.nat)))) (a .Tmᴹ.nat))
@@ -150,22 +153,21 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       unfolding coe
       aux : cwfᴹ .C.ctors .Cᶜ._[_] a (cwfᴹ .C.ctors .Cᶜ.id) ≡[ cong (λ A' → Tmᴹ _ A') (cwfᴹ .C.ctors .Cᶜ.[id]T) ] a
       aux = refl
-  cwfᴹ .C.ctors .Cᶜ.[∘] = {!!}
-  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.obj p = Σ (Conᴹ.obj Γ p) (A .Tyᴹ.fib)
-  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest le w =
-    pair (Conᴹ.rest Γ le (first w)) (A .Tyᴹ.rest le (first w) (second w))
-  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest-id = ap-pair (Γ .Conᴹ.rest-id) (A .Tyᴹ.rest-id)
-  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest-⊙ = ap-pair (Γ .Conᴹ.rest-⊙) (A .Tyᴹ.rest-⊙)
-  cwfᴹ .C.ctors .Cᶜ.p .Subᴹ.map w = first w
+  cwfᴹ .C.ctors .Cᶜ.[∘] = Tmᴹ≡ {! !}
+  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.obj p = Σ[ γ ∈ Conᴹ.obj Γ p ] Tm (A .Tyᴹ.fib γ)
+  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest le (γ ,, a) = Conᴹ.rest Γ le γ ,, A .Tyᴹ.rest le γ a
+  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest-id = Σ≡ (Γ .Conᴹ.rest-id) (A .Tyᴹ.rest-id)
+  cwfᴹ .C.ctors .Cᶜ._▷_ Γ A .Conᴹ.rest-⊙ = Σ≡ (Γ .Conᴹ.rest-⊙) (A .Tyᴹ.rest-⊙)
+  cwfᴹ .C.ctors .Cᶜ.p .Subᴹ.map = proj₁
   cwfᴹ .C.ctors .Cᶜ.p .Subᴹ.nat = refl
-  cwfᴹ .C.ctors .Cᶜ.q .Tmᴹ.at w = second w
+  cwfᴹ .C.ctors .Cᶜ.q .Tmᴹ.at = proj₂
   cwfᴹ .C.ctors .Cᶜ.q {A = A} .Tmᴹ.nat {γ = γ} = reflᴰ
-  cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.map γ = pair (σ .Subᴹ.map γ) (a .Tmᴹ.at γ)
-  cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.nat = ap-pair (σ .Subᴹ.nat) (a .Tmᴹ.nat)
+  cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.map γ = σ .Subᴹ.map γ ,, a .Tmᴹ.at γ
+  cwfᴹ .C.ctors .Cᶜ._,_ σ a .Subᴹ.nat = Σ≡ (σ .Subᴹ.nat) (a .Tmᴹ.nat)
   cwfᴹ .C.ctors .Cᶜ.p∘, = refl
-  cwfᴹ .C.ctors .Cᶜ.,∘ {σ = σ} {a = a} {τ = τ} = Subᴹ≡ {!!}
+  cwfᴹ .C.ctors .Cᶜ.,∘ = Subᴹ≡ λ γ → Σ≡ refl (ap-at (Tyᴹ≡ (λ _ → refl) λ le γ₁ a₁ → {!  !}) refl γ)
   cwfᴹ .C.ctors .Cᶜ.p,q = refl
-  cwfᴹ .C.ctors .Cᶜ.q[,] = Tmᴹ≡ λ γ → {!!}
+  cwfᴹ .C.ctors .Cᶜ.q[,] = Tmᴹ≡ λ γ → sym (undep (ap-at (Tyᴹ≡ (λ _ → refl) λ le γ₁ a₁ → {!  !}) refl γ))
 
   gatᴹ : FO-GAT.GAT-ToS
   gatᴹ .G.cwf = cwfᴹ
@@ -181,10 +183,10 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .from-to _ = refl
   gatᴹ .G.gat-ctors .Gᶜ.top[] = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.fib γ =
-    Σ (A .Tyᴹ.fib γ) (λ x → B .Tyᴹ.fib (pair γ x))
+    Σ (A .Tyᴹ.fib γ) (λ x → B .Tyᴹ.fib (γ ,, x))
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest le γ w =
     pair (A .Tyᴹ.rest le γ (first w))
-         (B .Tyᴹ.rest le (pair γ (first w)) (second w))
+         (B .Tyᴹ.rest le (γ ,, first w) (second w))
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest-id = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest-⊙ = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.Σ[] = {!!}

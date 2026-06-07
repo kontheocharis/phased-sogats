@@ -54,7 +54,7 @@ module InCwF (cwf : CwF) where
       lam-appᴱ : ((s : S) → Tm Γ (T s)) ≃ Tm Γ (Πᴱ S T)
       lamᴱ[] : (lam-appᴱ .to s) [ σ ] ≡[ ap-Tm Πᴱ[] ] lam-appᴱ .to (λ x → s x [ σ ])
 
-record GAT-ToS : Set₁ where
+record GAT-ToS : Set₂ where
   field
     cwf : CwF
   open CwF cwf public

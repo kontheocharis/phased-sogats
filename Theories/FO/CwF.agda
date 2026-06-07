@@ -2,9 +2,9 @@ module Theories.FO.CwF where
 
 open import Utils
 
-record CwFSorts : Set₁ where
+record CwFSorts : Set₂ where
   field
-    Con : Set
+    Con : Set₁
     Sub : Con → Con → Set
     Ty : Con → Set
     Tm : (Γ : Con) → Ty Γ → Set
@@ -74,7 +74,7 @@ module InCwFSorts (sorts : CwFSorts) where
       q : Tm (Γ ▷ A) (A [ p ]T)
       _,_ : (σ : Sub Γ Δ) → Tm Γ (A [ σ ]T) → Sub Γ (Δ ▷ A)
       p∘, : p ∘ (σ , a) ≡ σ
-      ,∘ : (σ , a) ∘ τ ≡ ((σ ∘ τ) , coe (ap-Tm (sym [∘]T)) (a [ τ ]))
+      ,∘ : (σ , a) ∘ τ ≡ ((σ ∘ τ) , coe (ap-Tm (sym ([∘]T {A = A}))) (a [ τ ]))
       p,q : _,_ {A = A} p q ≡ id
 
     ap-[]T : σ ≡ τ → A [ σ ]T ≡ A [ τ ]T
@@ -97,7 +97,7 @@ module InCwFSorts (sorts : CwFSorts) where
       ap-▷ : (eΓ : Γ ≡ Δ) → A ≡[ ap-Ty eΓ ] B → (Γ ▷ A) ≡ (Δ ▷ B)
       ap-▷ refl refl = refl
 
-record CwF : Set₁ where
+record CwF : Set₂ where
   field
     sorts : CwFSorts
   open InCwFSorts sorts public

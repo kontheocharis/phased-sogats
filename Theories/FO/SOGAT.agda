@@ -21,7 +21,7 @@ module InGAT (gat : GAT-ToS) where
       lam-appᴿ : Tm (Γ ▷ El (elᴿ a)) (El Bu) ≃ Tm Γ (El (Πᴿ a Bu))
       -- @@Todo: substitution rules for ΠR, lam
 
-record SOGAT-ToS : Set₁ where
+record SOGAT-ToS : Set₂ where
   field
     gat : GAT-ToS
   open GAT-ToS gat public
