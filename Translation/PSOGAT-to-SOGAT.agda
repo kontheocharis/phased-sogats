@@ -11,6 +11,8 @@ open import Data.Unit using (tt) renaming (⊤ to 𝟙)
 open import Data.Product using (Σ-syntax; proj₁; proj₂) renaming (_,_ to _,,_)
 
 module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
+  -- Here we enter the internal language of Psh(SOGAT-ToS). In other
+  -- words a two-level type theory where the object language is the SOGAT ToS.
   open SO.SOGAT-ToS s
   open InPhaseAlg Φ
 
@@ -19,8 +21,9 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     (#-map : ∀ {p q} → q ≤ p → Tm (El (Πᴿ (# q) (λ _ → elᴿ (# p)))))
     where
 
-    -- What we will do is build a model of PSOGAT ToS in Psh(Φ) with *the object
-    -- universe* for Ty/Tm.
+    -- What we will do is build a model of PSOGAT ToS in psh(Φ) where the
+    -- types and terms come from the object language (SOGAT ToS) but contexts
+    -- and substitutions are meta (to make it a bit easier)
 
     module P = FO.PSOGAT-ToS
     module S = FO-SOGAT.SOGAT-ToS
