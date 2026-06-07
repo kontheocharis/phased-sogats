@@ -18,7 +18,7 @@ module GAT-ToS (_ : In-GAT-ToS) where
     t u v : S
     A B C : Ty
     F G H : Tm A → Ty
-    a b c : Tm A
+    a b c d : Tm A
     f g h : (x : Tm A) → Tm (F x)
     X : S → Ty
     fe : (s : S) → Tm (X s)
@@ -79,6 +79,9 @@ module GAT-ToS (_ : In-GAT-ToS) where
   pair-proj .from p = first p , second p
   pair-proj .to-from _ = refl
   pair-proj .from-to _ = refl
+
+  ap-pair : (e1 : a ≡ b) → c ≡[ cong Tm (cong F e1) ] d → pair {F = F} a c ≡ pair b d
+  ap-pair e1 e2 = cong (pair-proj .to) (Σ≡ e1 e2)
 
   unit-uniq : 𝟙 ≃ Tm `1
   unit-uniq .to _ = top
