@@ -33,7 +33,8 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     module Cᶜ = FO-CwF.InCwFSorts.CwFCtors
     module Gᶜ = FO-GAT.InCwF.GATCtors
     module Sᶜ = FO-SOGAT.InGAT.SOGATCtors
-    module Pᶜ = FO.InSOGAT.PSOGATCtors
+    module Pˢ = FO.InSOGAT.PSOGATSorts
+    module Pᶜ = FO.InSOGAT.InPSOGATSorts.PSOGATCtors
 
     variable
       le : q ≤ p
@@ -193,7 +194,6 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .from _ = tt
     gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .to-from x = Tmᴹ≡ λ γ → sym (top-uniq (x .Tmᴹ.at γ))
     gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .from-to _ = refl
-    gatᴹ .G.gat-ctors .Gᶜ.top[] = Tmᴹ≡ λ _ → top-uniqᴹ
     gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.fib γ =
       Σ (A .Tyᴹ.fib γ) (λ x → B .Tyᴹ.fib (γ ,, x))
     gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest le γ w =
@@ -280,11 +280,16 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
 
     psogatᴹ : FO.PSOGAT-ToS Φ
     psogatᴹ .P.sogat = sogatᴹ
-    psogatᴹ .P.psogat-ctors .Pᶜ.In = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.In[] = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.In-prop = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.in⊤ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.in-and-proj = {!!}
+    psogatᴹ .P.psogat-sorts .Pˢ.In = {!!}
+    psogatᴹ .P.psogat-sorts .Pˢ.In-prop = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ._[_]ᴵ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ._▷ᴵ_ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.pᴵ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.qᴵ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ._,ᴵ_ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.,ᴵ∘ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.p,ᴵq = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.pᴵ∘,ᴵ = {!!}
     psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾ = {!!}
     psogatᴹ .P.psogat-ctors .Pᶜ.↑↓ = {!!}
     psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾᵁ = {!!}

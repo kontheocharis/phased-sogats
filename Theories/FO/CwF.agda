@@ -86,8 +86,8 @@ module InCwFSorts (sorts : CwFSorts) where
     field
       q[,] : q [ σ , a ] ≡[ ap-Tm (trans (sym [∘]T) (ap-[]T p∘,)) ] a
 
-    _↑_ : (σ : Sub Γ Δ) → (A : Ty Δ) → Sub (Γ ▷ (A [ σ ]T)) (Δ ▷ A)
-    σ ↑ A = ((σ ∘ p) , coe (ap-Tm (sym [∘]T)) q)
+    _⁺ : (σ : Sub Γ Δ) → Sub (Γ ▷ (A [ σ ]T)) (Δ ▷ A)
+    σ ⁺ = ((σ ∘ p) , coe (ap-Tm (sym [∘]T)) q)
 
     <_> : Tm Γ A → Sub Γ (Γ ▷ A)
     < a > = id , coe (ap-Tm (sym [id]T)) a

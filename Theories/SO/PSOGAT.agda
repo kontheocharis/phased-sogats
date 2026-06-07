@@ -22,63 +22,63 @@ module PSOGAT-ToS (Φ : PhaseAlg) (s : In-PSOGAT-ToS Φ) where
     t u : Phase
 
   postulate
-    In : Phase → Ty
-    In-prop : (x y : Tm (In t)) → x ≡ y
-    in⊤ : Tm (In ⊤)
-    In-and-proj : (Tm (In t) × Tm (In u)) ≃ Tm (In (t ∧ u))
+    In : Phase → Set
+    In-prop : (x y : In t) → x ≡ y
+    in⊤ : In ⊤
+    In-and-proj : (In t × In u) ≃ In (t ∧ u)
 
-  In-and : Tm (In t) → Tm (In u) → Tm (In (t ∧ u))
+  In-and : In t → In u → In (t ∧ u)
   In-and x y = In-and-proj .to (x , y)
 
-  In-fst : Tm (In (t ∧ u)) → Tm (In t)
+  In-fst : In (t ∧ u) → In t
   In-fst z = In-and-proj .from z .proj₁
 
-  In-snd : Tm (In (t ∧ u)) → Tm (In u)
+  In-snd : In (t ∧ u) → In u
   In-snd z = In-and-proj .from z .proj₂
 
   postulate
-    Πᴾ : (t : Phase) (F : Tm (In t) → Ty) → Ty
-    ↓ᴾ : ((x : Tm (In t)) → Tm (F x)) → Tm (Πᴾ t F)
-    ↑ᴾ : Tm (Πᴾ t F) → (x : Tm (In t)) → Tm (F x)
+    Πᴾ : (t : Phase) (F : In t → Ty) → Ty
+    ↓ᴾ : ((x : In t) → Tm (F x)) → Tm (Πᴾ t F)
+    ↑ᴾ : Tm (Πᴾ t F) → (x : In t) → Tm (F x)
     Πᴾ-β : ↑ᴾ (↓ᴾ f) b ≡ f b
   {-# REWRITE Πᴾ-β #-}
   postulate
     Πᴾ-η : ↓ᴾ (λ x → ↑ᴾ a x) ≡ a
   {-# REWRITE Πᴾ-η #-}
 
-  ↓↑ : ((x : Tm (In t)) → Tm (F x)) ≃ Tm (Πᴾ t F)
+  ↓↑ : ((x : In t) → Tm (F x)) ≃ Tm (Πᴾ t F)
   ↓↑ .to = ↓ᴾ
   ↓↑ .from = ↑ᴾ
   ↓↑ .to-from _ = refl
   ↓↑ .from-to _ = refl
 
   postulate
-    Πᴾᵁ : (t : Phase) (f : Tm (In t) → Tm U) → Tm U
-    ↓ᴾᵁ : ((x : Tm (In t)) → Tm (El (f x))) → Tm (El (Πᴾᵁ t f))
-    ↑ᴾᵁ : Tm (El (Πᴾᵁ t f)) → (x : Tm (In t)) → Tm (El (f x))
+    Πᴾᵁ : (t : Phase) (f : In t → Tm U) → Tm U
+    ↓ᴾᵁ : ((x : In t) → Tm (El (f x))) → Tm (El (Πᴾᵁ t f))
+    ↑ᴾᵁ : Tm (El (Πᴾᵁ t f)) → (x : In t) → Tm (El (f x))
     Πᴾᵁ-β : ↑ᴾᵁ (↓ᴾᵁ f) b ≡ f b
   {-# REWRITE Πᴾᵁ-β #-}
   postulate
     Πᴾᵁ-η : ↓ᴾᵁ (λ x → ↑ᴾᵁ a x) ≡ a
   {-# REWRITE Πᴾᵁ-η #-}
 
-  ↓↑ᵁ : ((x : Tm (In t)) → Tm (El (f x))) ≃ Tm (El (Πᴾᵁ t f))
+  ↓↑ᵁ : ((x : In t) → Tm (El (f x))) ≃ Tm (El (Πᴾᵁ t f))
   ↓↑ᵁ .to = ↓ᴾᵁ
   ↓↑ᵁ .from = ↑ᴾᵁ
   ↓↑ᵁ .to-from _ = refl
   ↓↑ᵁ .from-to _ = refl
 
   postulate
-    Πᴾᴿ : (t : Phase) (f : Tm (In t) → Tm Uᴿ) → Tm Uᴿ
-    ↓ᴾᴿ : ((x : Tm (In t)) → Tm (El (elᴿ (f x)))) → Tm (El (elᴿ (Πᴾᴿ t f)))
-    ↑ᴾᴿ : Tm (El (elᴿ (Πᴾᴿ t f))) → (x : Tm (In t)) → Tm (El (elᴿ (f x)))
+    Πᴾᴿ : (t : Phase) (f : In t → Tm Uᴿ) → Tm Uᴿ
+    ↓ᴾᴿ : ((x : In t) → Tm (El (elᴿ (f x)))) → Tm (El (elᴿ (Πᴾᴿ t f)))
+    ↑ᴾᴿ : Tm (El (elᴿ (Πᴾᴿ t f))) → (x : In t) → Tm (El (elᴿ (f x)))
     Πᴾᴿ-β : ↑ᴾᴿ (↓ᴾᴿ f) b ≡ f b
   {-# REWRITE Πᴾᴿ-β #-}
   postulate
     Πᴾᴿ-η : ↓ᴾᴿ (λ x → ↑ᴾᴿ a x) ≡ a
   {-# REWRITE Πᴾᴿ-η #-}
 
-  ↓↑ᴿ : ((x : Tm (In t)) → Tm (El (elᴿ (f x)))) ≃ Tm (El (elᴿ (Πᴾᴿ t f)))
+  ↓↑ᴿ : ((x : In t) → Tm (El (elᴿ (f x)))) ≃ Tm (El (elᴿ (Πᴾᴿ t f)))
   ↓↑ᴿ .to = ↓ᴾᴿ
   ↓↑ᴿ .from = ↑ᴾᴿ
   ↓↑ᴿ .to-from _ = refl

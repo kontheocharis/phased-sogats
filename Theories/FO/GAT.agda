@@ -19,11 +19,10 @@ module InCwF (cwf : CwF) where
       `1 : Ty Γ
       `1[] : `1 {Γ = Δ} [ σ ]T ≡ `1
       unit-uniq : 𝟙 ≃ Tm Γ `1
-      top[] : unit-uniq .to tt [ σ ] ≡[ ap-Tm `1[] ] unit-uniq .to tt
 
       -- Σ
       Σ : (A : Ty Γ) → Ty (Γ ▷ A) → Ty Γ
-      Σ[] : (Σ A B) [ σ ]T ≡ Σ (A [ σ ]T) (B [ σ ↑ A ]T)
+      Σ[] : (Σ A B) [ σ ]T ≡ Σ (A [ σ ]T) (B [ σ ⁺ ]T)
       pair-proj : (Σ[ a ∈ Tm Γ A ] Tm Γ (B [ < a > ]T)) ≃ Tm Γ (Σ A B)
       -- @@Todo: substitution rules for pair
 
@@ -36,10 +35,10 @@ module InCwF (cwf : CwF) where
       -- Π
       Π : (a : Tm Γ U) → Ty (Γ ▷ El a) → Ty Γ
       Π[] : (Π a B) [ σ ]T ≡ Π (coe (ap-Tm U[]) (a [ σ ]))
-        (coe (ap-Ty (cong (_ ▷_) El[])) (B [ σ ↑ El a ]T))
+        (coe (ap-Ty (cong (_ ▷_) El[])) (B [ σ ⁺ ]T))
       lam-app : Tm (Γ ▷ El a) B ≃ Tm Γ (Π a B)
       lam[] : (lam-app {a = a} {B = B} .to b) [ σ ] ≡[ ap-Tm Π[] ]
-        lam-app .to (coe (ap-Tmᶜ (cong (_ ▷_) El[]) refl) (b [ σ ↑ El a ]))
+        lam-app .to (coe (ap-Tmᶜ (cong (_ ▷_) El[]) refl) (b [ σ ⁺ ]))
 
       -- Equality
       Eq : Tm Γ A → Tm Γ A → Ty Γ
