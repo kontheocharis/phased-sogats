@@ -74,14 +74,24 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   top-uniqᴹ : {γ γ' : Tm `1} → γ ≡ γ'
   top-uniqᴹ {γ} {γ'} = trans (top-uniq γ) (sym (top-uniq γ'))
 
+  Eq-uip : ∀ {A} {a b : Tm A} (x y : Tm (Eq a b)) → x ≡ y
+  Eq-uip x y = trans (sym (refl-reflect .to-from x)) (refl-reflect .to-from y)
+
   opaque
     unfolding coe
-    rest-nat : (A : Tyᴹ Γ) {γ γ' : Conᴹ.obj Γ p} (e : γ ≡ γ') {a : Tm (A .Tyᴹ.fib γ)}
+    ap-rest : (A : Tyᴹ Γ) {γ γ' : Conᴹ.obj Γ p} (e : γ ≡ γ') {a : Tm (A .Tyᴹ.fib γ)}
       → A .Tyᴹ.rest le γ a
         ≡[ cong Tm (cong (A .Tyᴹ.fib) (cong (Conᴹ.rest Γ le) e)) ]
         A .Tyᴹ.rest le γ' (coe (cong Tm (cong (A .Tyᴹ.fib) e)) a)
-    rest-nat A refl = refl
+    ap-rest A refl = refl
 
+    ap-at : (e1 : A ≡ B) (e2 : a ≡[ cong (Tmᴹ Γ) e1 ] b) (γ : Conᴹ.obj Γ p)
+      → a .Tmᴹ.at γ ≡[ cong (λ T → Tm (T .Tyᴹ.fib γ)) e1 ] b .Tmᴹ.at γ
+    ap-at refl refl γ = refl
+
+  -- Equalities of records
+  opaque
+    unfolding coe
     Subᴹ≡ : {σ τ : Subᴹ Δ Γ}
       → (∀ {p} (γ : Conᴹ.obj Δ p)
       → σ .Subᴹ.map γ ≡ τ .Subᴹ.map γ)
@@ -103,12 +113,6 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
         B .Tyᴹ.rest le γ (coe (cong Tm (e-fib γ)) a))
       → A ≡ B
     Tyᴹ≡ = {!!}
-
-
-    ap-at : (e1 : A ≡ B) (e2 : a ≡[ cong (Tmᴹ Γ) e1 ] b) (γ : Conᴹ.obj Γ p)
-      → a .Tmᴹ.at γ ≡[ cong (λ T → Tm (T .Tyᴹ.fib γ)) e1 ] b .Tmᴹ.at γ
-    ap-at refl refl γ = refl
-
 
   cwfᴹ : FO-CwF.CwF
   cwfᴹ .C.sorts .Cˢ.Con = Conᴹ
@@ -135,7 +139,7 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       (A .Tyᴹ.rest le (σ .Subᴹ.map γ) a)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest-id = splitl (A .Tyᴹ.rest-id)
   cwfᴹ .C.ctors .Cᶜ._[_]T A σ .Tyᴹ.rest-⊙ =
-    splitl (splitr (transᴰ (A .Tyᴹ.rest-⊙) (rest-nat A (σ .Subᴹ.nat))))
+    splitl (splitr (transᴰ (A .Tyᴹ.rest-⊙) (ap-rest A (σ .Subᴹ.nat))))
   cwfᴹ .C.ctors .Cᶜ.[id]T = aux
     where
     opaque
@@ -175,20 +179,23 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
   gatᴹ .G.gat-ctors .Gᶜ.`1 .Tyᴹ.rest _ _ _ = top
   gatᴹ .G.gat-ctors .Gᶜ.`1 .Tyᴹ.rest-id = top-uniqᴹ
   gatᴹ .G.gat-ctors .Gᶜ.`1 .Tyᴹ.rest-⊙ = top-uniqᴹ
-  gatᴹ .G.gat-ctors .Gᶜ.`1[] = {!!}
+  gatᴹ .G.gat-ctors .Gᶜ.`1[] = Tyᴹ≡ (λ _ → refl) (λ _ _ _ → top-uniqᴹ)
   gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .to _ .Tmᴹ.at _ = top
   gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .to _ .Tmᴹ.nat = top-uniqᴹ
   gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .from _ = tt
-  gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .to-from _ = {!!}
+  gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .to-from x = Tmᴹ≡ λ γ → sym (top-uniq (x .Tmᴹ.at γ))
   gatᴹ .G.gat-ctors .Gᶜ.unit-uniq .from-to _ = refl
-  gatᴹ .G.gat-ctors .Gᶜ.top[] = {!!}
+  gatᴹ .G.gat-ctors .Gᶜ.top[] = Tmᴹ≡ λ _ → top-uniqᴹ
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.fib γ =
     Σ (A .Tyᴹ.fib γ) (λ x → B .Tyᴹ.fib (γ ,, x))
   gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest le γ w =
-    pair (A .Tyᴹ.rest le γ (first w))
-         (B .Tyᴹ.rest le (γ ,, first w) (second w))
-  gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest-id = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.Σ A B .Tyᴹ.rest-⊙ = {!!}
+    pair (A .Tyᴹ.rest le γ (first w)) (B .Tyᴹ.rest le (γ ,, first w) (second w))
+  gatᴹ .G.gat-ctors .Gᶜ.Σ {Γ = Γ} A B .Tyᴹ.rest-id =
+    ap-pair {X = A .Tyᴹ.fib} {Y = λ γ x → B .Tyᴹ.fib (γ ,, x)}
+            (Γ .Conᴹ.rest-id) (A .Tyᴹ.rest-id) (B .Tyᴹ.rest-id)
+  gatᴹ .G.gat-ctors .Gᶜ.Σ {Γ = Γ} A B .Tyᴹ.rest-⊙ =
+    ap-pair {X = A .Tyᴹ.fib} {Y = λ γ x → B .Tyᴹ.fib (γ ,, x)}
+            (Γ .Conᴹ.rest-⊙) (A .Tyᴹ.rest-⊙) (B .Tyᴹ.rest-⊙)
   gatᴹ .G.gat-ctors .Gᶜ.Σ[] = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.pair-proj = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.U = {!!}
@@ -204,23 +211,27 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     refl-reflect .to
       (by (trans (sym (s .Tmᴹ.nat))
         (trans (cong (A .Tyᴹ.rest le γ) (refl-reflect .from x .witness)) (t .Tmᴹ.nat))))
-  gatᴹ .G.gat-ctors .Gᶜ.Eq s t .Tyᴹ.rest-id = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.Eq s t .Tyᴹ.rest-⊙ = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.Eq[] = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.Refl[] = {!!}
+  gatᴹ .G.gat-ctors .Gᶜ.Eq s t .Tyᴹ.rest-id = Eq-uip _ _
+  gatᴹ .G.gat-ctors .Gᶜ.Eq s t .Tyᴹ.rest-⊙ = Eq-uip _ _
+  gatᴹ .G.gat-ctors .Gᶜ.Eq[] = Tyᴹ≡ (λ _ → refl) (λ _ _ _ → Eq-uip _ _)
+  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect .to e .Tmᴹ.at γ = refl-reflect .to (by (cong (λ a → a .Tmᴹ.at γ) (e .witness)))
+  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect .to e .Tmᴹ.nat = Eq-uip _ _
+  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect .from x = by (Tmᴹ≡ λ γ → refl-reflect .from (x .Tmᴹ.at γ) .witness)
+  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect .to-from x = Tmᴹ≡ λ γ → Eq-uip _ _
+  gatᴹ .G.gat-ctors .Gᶜ.refl-reflect .from-to _ = refl
+  gatᴹ .G.gat-ctors .Gᶜ.Refl[] = Tmᴹ≡ λ γ → Eq-uip _ _
   gatᴹ .G.gat-ctors .Gᶜ.Πᴱ S B .Tyᴹ.fib γ = Πᴱ S (λ s → B s .Tyᴹ.fib γ)
   gatᴹ .G.gat-ctors .Gᶜ.Πᴱ S B .Tyᴹ.rest le γ g = lamᴱ (λ s → B s .Tyᴹ.rest le γ (g ∙ᴱ s))
   gatᴹ .G.gat-ctors .Gᶜ.Πᴱ S B .Tyᴹ.rest-id = {!!}
   gatᴹ .G.gat-ctors .Gᶜ.Πᴱ S B .Tyᴹ.rest-⊙ = {!!}
-  gatᴹ .G.gat-ctors .Gᶜ.Πᴱ[] = {! refl!}
+  gatᴹ .G.gat-ctors .Gᶜ.Πᴱ[] = Tyᴹ≡ (λ _ → refl) (λ _ _ _ → {!!})
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .to f .Tmᴹ.at γ = lamᴱ (λ s → f s .Tmᴹ.at γ)
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .to f .Tmᴹ.nat = cong lamᴱ (funext (λ s → f s .Tmᴹ.nat))
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .from t s .Tmᴹ.at γ = t .Tmᴹ.at γ ∙ᴱ s
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .from t s .Tmᴹ.nat = cong (_∙ᴱ s) (t .Tmᴹ.nat)
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .to-from _ = refl
   gatᴹ .G.gat-ctors .Gᶜ.lam-appᴱ .from-to _ = refl
-  gatᴹ .G.gat-ctors .Gᶜ.lamᴱ[] = {!!}
+  gatᴹ .G.gat-ctors .Gᶜ.lamᴱ[] = Tmᴹ≡ λ γ → {!!}
 
   sogatᴹ : FO-SOGAT.SOGAT-ToS
   sogatᴹ .S.gat = gatᴹ

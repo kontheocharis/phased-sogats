@@ -21,6 +21,7 @@ module GAT-ToS (_ : In-GAT-ToS) where
     a b c d : Tm A
     f g h : (x : Tm A) → Tm (F x)
     X : S → Ty
+    Y : (s : S) → Tm (X s) → Ty
     fe : (s : S) → Tm (X s)
 
   postulate
@@ -80,8 +81,13 @@ module GAT-ToS (_ : In-GAT-ToS) where
   pair-proj .to-from _ = refl
   pair-proj .from-to _ = refl
 
-  ap-pair : (e1 : a ≡ b) → c ≡[ cong Tm (cong F e1) ] d → pair {F = F} a c ≡ pair b d
-  ap-pair e1 e2 = cong (pair-proj .to) (Σ≡ e1 e2)
+  opaque
+    unfolding coe
+    ap-pair : (e : t ≡ u)
+      (eab : a ≡[ cong Tm (cong X e) ] b)
+      (ecd : c ≡[ cong Tm (cong (λ (x , y) → Y x y) (Σ≡ e eab)) ] d)
+      → pair a c ≡[ cong Tm (cong (λ s → Σ (X s) (Y s)) e) ] pair b d
+    ap-pair refl refl refl = refl
 
   unit-uniq : 𝟙 ≃ Tm `1
   unit-uniq .to _ = top

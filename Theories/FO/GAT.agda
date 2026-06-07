@@ -24,7 +24,7 @@ module InCwF (cwf : CwF) where
       -- Σ
       Σ : (A : Ty Γ) → Ty (Γ ▷ A) → Ty Γ
       Σ[] : (Σ A B) [ σ ]T ≡ Σ (A [ σ ]T) (B [ σ ↑ A ]T)
-      pair-proj : Σ[ a ∈ Tm Γ A ] Tm Γ (B [ < a > ]T) ≃ Tm Γ (Σ A B)
+      pair-proj : (Σ[ a ∈ Tm Γ A ] Tm Γ (B [ < a > ]T)) ≃ Tm Γ (Σ A B)
       -- @@Todo: substitution rules for pair
 
       -- Universe for sorts
