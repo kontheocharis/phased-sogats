@@ -32,7 +32,7 @@ declaring representable sorts, and `Ty` which is the sort for signatures
 themselves.
 
 The PSOGAT ToS over a phase algebra `Φ` extends the SOGAT ToS with a (weak) meet
-semilattice homomorphism `Φ → PROP`, and an open modality for each `P : Phase`:
+semilattice homomorphism `Φ → PROPᴿ`, and an open modality for each `P : Phase`:
 
 ```
 In : Phase → Propᴿ
@@ -63,11 +63,11 @@ We can write down the definition of 'type theory with erasure' as presented
 Tm : (@0 Ty) → Uᴿ
 
 -- Pi with erased domain
-Π0 : (A : Ty) → ((@0 Tm A) → Ty) → Ty
+@0 Π0 : (A : Ty) → (Tm A → Ty) → Ty
 (lam, app) : ((@0 x : Tm A) → Tm (B x)) ≃ Tm (Π0 A B)
 
 -- Pi with runtime domain
-Πω : (A : Ty) → (Tm A → Ty) → Ty
+@0 Πω : (A : Ty) → (Tm A → Ty) → Ty
 (lam, app) : ((x : Tm A) → Tm (B x)) ≃ Tm (Πω A B)
 ```
 
@@ -98,12 +98,13 @@ Tm0 : Ty → Uᴿ
 -- sort for *that* phase. For that example, Tm0 A.
 
 -- Pi with erased domain
-Π0 : (A : Ty) → (Tm0 A → Ty) → Ty
-(lam, app) : ((x : Tm0 A) → Tmω (B x)) ≃ Tmω (Π0 A B)
+Π0 : (i : In0) → (A : Ty' i) → (Tmω A → Ty' i) → Ty' i
+(lam, app) : ((x : Tm0 A) → Tmω (λ i . B i (↑ x i))) ≃ Tmω (λ i. Π0 i (A i) (B i))
 
 -- Pi with runtime domain
-Πω : (A : Ty) → (Tmω A → Ty) → Ty
-(lam, app) : ((x : Tmω A) → Tmω (B x)) ≃ Tmω (Πω A B)
+Πω : (i : In0) → (A : Ty' i) → (Tmω A → Ty' i) → Ty' i
+(lam, app) : ((x : Tmω A) → Tmω (λ i . B i x)) ≃ Tmω (λ i . Πω i (A i) (B i))
 ```
 
-This is exactly the SOGAT given in the referenced paper.
+This is equivalent to the SOGAT given in the referenced paper, up to the
+insertion of the ↑↓ isomorphism, and choice of `Ty` vs `Ty'`.
