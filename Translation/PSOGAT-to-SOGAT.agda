@@ -206,28 +206,20 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
         (Γ .Conᴹ.rest-⊙) (A .Tyᴹ.rest-⊙) (B .Tyᴹ.rest-⊙)
     gatᴹ .G.gat-ctors .Gᶜ.Σ[] = {!!}
     gatᴹ .G.gat-ctors .Gᶜ.pair-proj = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.fib {p} _ =
-      Xp ∶ U ⨾
-      [ p' ∶ / p ] ⇒ᴱ (Xp' ∶ U ⨾ Iso (# (proj₁ p') ⇒ᴿ Xp) Xp')
-    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest le _ s' =
-      pair (first s') (lamᴱ λ p' → second s' ∙ᴱ /-map le p')
-    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest-id = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest-⊙ = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.U[] = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.fib {p} γ =
-      -- Here we can add an element at each p' ≤ p as well, but the resultant
-      -- thing would be contractible since the U data already gives the ability
-      -- to move across phases.
-      El (first (second (a .Tmᴹ.at γ) ∙ᴱ (p ,, by ≤-refl)))
-    gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.rest {q} {p} le γ x =
-      let s' = second (a .Tmᴹ.at γ)
-          ιp = second (s' ∙ᴱ (p ,, by ≤-refl))
-          ιq = second (s' ∙ᴱ (q ,, by le))
-      in coe {!!} (iso-fwd ιq (lamᴿ λ i → iso-bwd ιp x ∙ᴿ (#-map le ∙ᴿ i)))
+    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.fib {p} _ = U
+    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest le _ s' = s'
+    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest-id = reflᴰ
+    gatᴹ .G.gat-ctors .Gᶜ.U .Tyᴹ.rest-⊙ = reflᴰ
+    gatᴹ .G.gat-ctors .Gᶜ.U[] = Tyᴹ≡ (λ _ → refl) λ _ _ _ → splitl (splitr reflᴰ)
+    gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.fib {p} γ = El (# p ⇒ᴿ a .Tmᴹ.at γ)
+    gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.rest {q} {p} le γ x = lamᴿ λ x₁ → coe (cong (λ A → Tm (El A)) (a .Tmᴹ.nat)) (x ∙ᴿ (#-map le ∙ᴿ x₁))
     gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.rest-id = {!!}
     gatᴹ .G.gat-ctors .Gᶜ.El a .Tyᴹ.rest-⊙ = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.El[] = {!!}
-    gatᴹ .G.gat-ctors .Gᶜ.Π = {!!}
+    gatᴹ .G.gat-ctors .Gᶜ.El[] = Tyᴹ≡ (λ γ → {! !}) {!!}
+    gatᴹ .G.gat-ctors .Gᶜ.Π a B .Tyᴹ.fib {p} γ = elᴿ (# p) ⇒ Π (a .Tmᴹ.at γ) (λ x → B .Tyᴹ.fib (γ ,, lamᴿ (λ _ → x)))
+    gatᴹ .G.gat-ctors .Gᶜ.Π a B .Tyᴹ.rest = {!!}
+    gatᴹ .G.gat-ctors .Gᶜ.Π a B .Tyᴹ.rest-id = {!!}
+    gatᴹ .G.gat-ctors .Gᶜ.Π a B .Tyᴹ.rest-⊙ = {!!}
     gatᴹ .G.gat-ctors .Gᶜ.Π[] = {!!}
     gatᴹ .G.gat-ctors .Gᶜ.lam-app = {!!}
     gatᴹ .G.gat-ctors .Gᶜ.lam[] = {!!}
@@ -261,18 +253,18 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     sogatᴹ : FO-SOGAT.SOGAT-ToS
     sogatᴹ .S.gat = gatᴹ
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.fib {p} _ =
-      Xp ∶ Uᴿ ⨾
-      [ p' ∶ / p ] ⇒ᴱ (Xp' ∶ Uᴿ ⨾ Iso (# (proj₁ p') ⇒ᴿ elᴿ Xp) (elᴿ Xp'))
+      X⊤ ∶ Uᴿ ⨾
+      [ p' ∶ / p ] ⇒ᴱ (Xp' ∶ Uᴿ ⨾ Iso (# (proj₁ p') ⇒ᴿ elᴿ X⊤) (elᴿ Xp'))
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest le _ s' =
       pair (first s') (lamᴱ λ p' → second s' ∙ᴱ /-map le p')
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest-id = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest-⊙ = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ[] = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.elᴿ r .Tmᴹ.at γ =
-      pair (elᴿ (first (r .Tmᴹ.at γ)))
-        (lamᴱ λ p' →
-          let c = second (r .Tmᴹ.at γ) ∙ᴱ p'
-          in pair (elᴿ (first c)) (second c))
+      -- Here we can add an element at each p' ≤ p as well, but the resultant
+      -- thing would be contractible since the U data already gives the ability
+      -- to move across phases.
+      elᴿ (first (r .Tmᴹ.at γ)) 
     sogatᴹ .S.sogat-ctors .Sᶜ.elᴿ r .Tmᴹ.nat = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.elᴿ[] = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Πᴿ = {!!}
