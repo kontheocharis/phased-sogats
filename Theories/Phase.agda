@@ -49,5 +49,8 @@ module InPhaseAlg (Φ : PhaseAlg) where
   /_ : Phase → Set
   /_ p = Σ[ q ∈ Phase ] (q ≤ p) true
 
+  /⊤ : / p
+  /⊤ {p = p} = p , by ≤-refl
+
   /-map : q ≤ p → / q → / p
   /-map le (r , by le') = r , by (le' ⊙ le)

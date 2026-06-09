@@ -253,10 +253,12 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     sogatᴹ : FO-SOGAT.SOGAT-ToS
     sogatᴹ .S.gat = gatᴹ
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.fib {p} _ =
-      X⊤ ∶ Uᴿ ⨾
-      [ p' ∶ / p ] ⇒ᴱ (Xp' ∶ Uᴿ ⨾ Iso (# (proj₁ p') ⇒ᴿ elᴿ X⊤) (elᴿ Xp'))
+      -- @@TODO: this actually doesn't do the right thing because it doesn't abstract over the right phase..
+      X ∶ [ p' ∶ / p ] ⇒ᴱ Uᴿ ⨾
+      [ p' ∶ / p ] ⇒ᴱ (Iso (# (proj₁ p') ⇒ᴿ elᴿ (X ∙ᴱ /⊤)) (elᴿ (X ∙ᴱ p')))
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest le _ s' =
-      pair (first s') (lamᴱ λ p' → second s' ∙ᴱ /-map le p')
+      pair (lamᴱ λ s₁ → first s' ∙ᴱ /-map le s₁) (lamᴱ λ s₁ → coe {! refl!} (second s' ∙ᴱ /-map le s₁))
+      -- pair (first s') (lamᴱ λ p' → second s' ∙ᴱ /-map le p')
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest-id = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ .Tyᴹ.rest-⊙ = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Uᴿ[] = {!!}
@@ -264,7 +266,8 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       -- Here we can add an element at each p' ≤ p as well, but the resultant
       -- thing would be contractible since the U data already gives the ability
       -- to move across phases.
-      elᴿ (first (r .Tmᴹ.at γ)) 
+      -- elᴿ (first (r .Tmᴹ.at γ)) 
+      {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.elᴿ r .Tmᴹ.nat = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.elᴿ[] = {!!}
     sogatᴹ .S.sogat-ctors .Sᶜ.Πᴿ = {!!}
@@ -272,19 +275,19 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
 
     psogatᴹ : FO.PSOGAT-ToS Φ
     psogatᴹ .P.sogat = sogatᴹ
-    psogatᴹ .P.psogat-sorts .Pˢ.In = {!!}
+    psogatᴹ .P.psogat-sorts .Pˢ.In = ?
     psogatᴹ .P.psogat-sorts .Pˢ.In-prop = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ._[_]ᴵ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ._▷ᴵ_ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ._[_]ᴵ = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ._▷ᴵ_ = ?
     psogatᴹ .P.psogat-ctors .Pᶜ.pᴵ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.qᴵ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ._,ᴵ_ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.,ᴵ∘ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.p,ᴵq = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.pᴵ∘,ᴵ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.qᴵ = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ._,ᴵ_ = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ.,ᴵ∘ = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ.p,ᴵq = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ.pᴵ∘,ᴵ = ?
+    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾ = ?
     psogatᴹ .P.psogat-ctors .Pᶜ.↑↓ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾᵁ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾᵁ = ?
     psogatᴹ .P.psogat-ctors .Pᶜ.↑↓ᵁ = {!!}
-    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾᴿ = {!!}
+    psogatᴹ .P.psogat-ctors .Pᶜ.Πᴾᴿ = ?
     psogatᴹ .P.psogat-ctors .Pᶜ.↑↓ᴿ = {!!}
