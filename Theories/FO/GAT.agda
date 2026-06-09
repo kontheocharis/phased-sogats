@@ -32,6 +32,16 @@ module InCwF (cwf : CwF) where
       El : Tm Γ U → Ty Γ
       El[] : (El a) [ σ ]T ≡ El (coe (ap-Tm U[]) (a [ σ ]))
 
+      -- Σ-types at the universe level
+      1ᵁ : Tm Γ U
+      1ᵁ[] : 1ᵁ {Γ = Δ} [ σ ] ≡[ ap-Tm U[] ] 1ᵁ
+      unit-uniqᵁ : 𝟙 ≃ Tm Γ (El 1ᵁ)
+
+      Σᵁ : (a : Tm Γ U) → Tm (Γ ▷ El a) U → Tm Γ U
+      pair-projᵁ : (Σ[ x ∈ Tm Γ (El a) ] Tm Γ (El (coe (ap-Tm U[]) (b [ < x > ]))))
+        ≃ Tm Γ (El (Σᵁ a b))
+      -- @@Todo: substitution
+
       -- Π
       Π : (a : Tm Γ U) → Ty (Γ ▷ El a) → Ty Γ
       Π[] : (Π a B) [ σ ]T ≡ Π (coe (ap-Tm U[]) (a [ σ ]))

@@ -44,6 +44,14 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     Els 1* = `1
     Els (Σ* A As) = Σ (El A) (λ k → Els (As k))
 
+    _*⇒_ : U* → Ty → Ty
+    1* *⇒ B = B
+    Σ* A As *⇒ B = [ a ∶ A ] ⇒ (As a *⇒ B)
+
+    els : U* → Tm U
+    els 1* = 1ᵁ
+    els (Σ* A As) = Σᵁ A (λ k → els (As k))
+
     Conᴹ : Set
     Conᴹ = U*
 
@@ -53,18 +61,15 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     Subᴹ : (Γ Δ : Conᴹ) → Set
     Subᴹ Γ Δ = Tm (Els Γ) → Tm (Els Δ)
 
-    Tyᴹ : (Γ : Conᴹ) → Set
-    Tyᴹ Γ = Tm (Els Γ) → Tm U
+    tyᴹ : (Γ : Conᴹ) → Ty
+    tyᴹ Γ = Γ *⇒ U
 
-    record Tyᴹᴿ (Γ : Conᴹ) : Set where
-      field
-        ＠ : (p : Phase) → Tm (elᴿ (# p) ⇒ Els Γ) → Tm Uᴿ
-
-      ＠⊤ : Tm (Els Γ) → Tm Uᴿ
-      ＠⊤ γ = ＠ ⊤ (lam λ _ → γ)
-
-      field
-        ↓↑ᵀ : (γ : Tm (elᴿ (# p) ⇒ Els Γ)) → Tm (Iso ([ i ∶ # p ] ⇒ᴿ elᴿ (＠⊤ (γ ∙ i))) (elᴿ (＠ p γ)))
+    tyᴹᴿ : (Γ : Conᴹ) → Ty
+    tyᴹᴿ Γ =
+      X ∶ [ p ∶ Phase ] ⇒ᴱ [ γ ∶ # p ⇒ᴿ els Γ ] ⇒ U ⨾
+      ↓↑ ∶ [ p ∶ Phase ] ⇒ᴱ ([ γ ∶ # p ⇒ᴿ els Γ ]
+        ⇒ Iso ([ i ∶ # p ] ⇒ᴿ ((X ∙ᴱ ⊤) ∙ lamᴿ λ _ → γ ∙ᴿ i)) ((X ∙ᴱ p) ∙ γ)) ⨾
+      `1
 
     -- variable
     --   A B : Tyᴹ Γ

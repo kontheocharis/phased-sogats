@@ -48,6 +48,25 @@ module GAT-ToS (_ : In-GAT-ToS) where
     El : Tm U → Ty
 
   postulate
+    1ᵁ : Tm U
+    topᵁ : Tm (El 1ᵁ)
+    top-uniqᵁ : (x : Tm (El 1ᵁ)) → x ≡ topᵁ
+
+  postulate
+    Σᵁ : (a : Tm U) → (Tm (El a) → Tm U) → Tm U
+    pairᵁ : (x : Tm (El a)) → Tm (El (f x)) → Tm (El (Σᵁ a f))
+    firstᵁ : Tm (El (Σᵁ a f)) → Tm (El a)
+    secondᵁ : (p : Tm (El (Σᵁ a f))) → Tm (El (f (firstᵁ p)))
+    firstᵁ-pairᵁ : firstᵁ (pairᵁ a b) ≡ a
+  {-# REWRITE firstᵁ-pairᵁ #-}
+  postulate
+    secondᵁ-pairᵁ : secondᵁ (pairᵁ a b) ≡ b
+  {-# REWRITE secondᵁ-pairᵁ #-}
+  postulate
+    pairᵁ-η : (p : Tm (El (Σᵁ a f))) → pairᵁ (firstᵁ p) (secondᵁ p) ≡ p
+  {-# REWRITE pairᵁ-η #-}
+
+  postulate
     Π : (a : Tm U) → (Tm (El a) → Ty) → Ty
     lam : ((x : Tm (El a)) → Tm (F x)) → Tm (Π a F)
     _∙_ : Tm (Π a F) → (x : Tm (El a)) → Tm (F x)
