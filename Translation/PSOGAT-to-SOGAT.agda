@@ -36,41 +36,47 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       le : q ≤ p
       le' : r ≤ q
 
-    record Conᴹ : Set where
-      field
-        _＠_  : Phase → Tm U
-        ↓↑ : Tm (Iso (# p ⇒ᴿ (_＠_ ⊤)) (_＠_ p))
+    data U* : Set where
+      1* : U*
+      Σ* : (A : Tm U) → (Tm (El A) → U*) → U*
 
-      ↓ : Tm (El (# p ⇒ᴿ (_＠_ ⊤))) → Tm (El (_＠_ p)) 
-      ↓ = iso-fwd ↓↑
+    Els : U* → Ty
+    Els 1* = `1
+    Els (Σ* A As) = Σ (El A) (λ k → Els (As k))
 
-      ↑ : Tm (El (_＠_ p)) → Tm (El (elᴿ (# p))) → Tm (El (_＠_ ⊤))
-      ↑ x i = iso-bwd ↓↑ x ∙ᴿ i
-
-    open Conᴹ
+    Conᴹ : Set
+    Conᴹ = U*
 
     variable
       Γ Δ Θ : Conᴹ
 
     Subᴹ : (Γ Δ : Conᴹ) → Set
-    Subᴹ Γ Δ = Tm (El (Γ ＠ ⊤)) → Tm (El (Δ ＠ ⊤))
+    Subᴹ Γ Δ = Tm (Els Γ) → Tm (Els Δ)
 
-    record Tyᴹ (Γ : Conᴹ) : Set where
+    Tyᴹ : (Γ : Conᴹ) → Set
+    Tyᴹ Γ = Tm (Els Γ) → Tm U
+
+    record Tyᴹᴿ (Γ : Conᴹ) : Set where
       field
-        _＠ᵀ_  : (p : Phase) → Tm (El (Γ ＠ p)) → Tm U
-        ↓↑ᵀ : (γ : Tm (El (Γ ＠ p))) → Tm (Iso ([ i ∶ # p ] ⇒ᴿ ((_＠ᵀ_ ⊤) (↑ Γ γ i))) ((_＠ᵀ_ p) γ))
+        ＠ : (p : Phase) → Tm (elᴿ (# p) ⇒ Els Γ) → Tm Uᴿ
 
-    variable
-      A B : Tyᴹ Γ
+      ＠⊤ : Tm (Els Γ) → Tm Uᴿ
+      ＠⊤ γ = ＠ ⊤ (lam λ _ → γ)
 
-    open Tyᴹ
+      field
+        ↓↑ᵀ : (γ : Tm (elᴿ (# p) ⇒ Els Γ)) → Tm (Iso ([ i ∶ # p ] ⇒ᴿ elᴿ (＠⊤ (γ ∙ i))) (elᴿ (＠ p γ)))
 
-    Tmᴹ : (Γ : Conᴹ) (A : Tyᴹ Γ) → Set
-    Tmᴹ Γ A = (γ : Tm (El (Γ ＠ ⊤))) → Tm (El ((A ＠ᵀ ⊤) γ))
+    -- variable
+    --   A B : Tyᴹ Γ
 
-    variable
-      σ τ θ : Subᴹ Δ Γ
-      a b : Tmᴹ Γ A
+    -- open Tyᴹ
+
+    -- Tmᴹ : (Γ : Conᴹ) (A : Tyᴹ Γ) → Set
+    -- Tmᴹ Γ A = (γ : Tm (El (Γ ＠ ⊤))) → Tm (El ((A ＠ᵀ ⊤) γ))
+
+    -- variable
+    --   σ τ θ : Subᴹ Δ Γ
+    --   a b : Tmᴹ Γ A
 
     -- top-uniqᴹ : {γ γ' : Tm `1} → γ ≡ γ'
     -- top-uniqᴹ {γ} {γ'} = trans (top-uniq γ) (sym (top-uniq γ'))
