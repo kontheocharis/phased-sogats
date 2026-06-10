@@ -94,4 +94,23 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     A [ σ ]ᴹᵀ = lam (λ δ → A ∙ σ δ)
 
     _[_]ᴹᵀᴿ : Tm (tyᴹᴿ Γ) → Subᴹ Δ Γ → Tm (tyᴹᴿ Δ)
-    A [ σ ]ᴹᵀᴿ = pair {! !} {!!}
+    A [ σ ]ᴹᵀᴿ = pair
+      (lamᴱ λ p → lam λ γ' → (first A ∙ᴱ p) ∙ lamᴿ (λ i → σ (γ' ∙ᴿ i)))
+      (pair
+        (lamᴱ λ p → lam λ γ' → (first (second A) ∙ᴱ p) ∙ lamᴿ (λ i → σ (γ' ∙ᴿ i)))
+        top)
+
+    _[_]ᴹ : (A : Tm (tyᴹ Γ)) (a : Tm (tmᴹ Γ A)) (σ : Subᴹ Δ Γ) → Tm (tmᴹ Δ (A [ σ ]ᴹᵀ))
+    _[_]ᴹ A a σ = lam (λ δ → a ∙ σ δ)
+
+    _[_]ᴹᴿ : (A : Tm (tyᴹᴿ Γ)) (a : Tm (tmᴹᴿ Γ A)) (σ : Subᴹ Δ Γ) → Tm (tmᴹᴿ Δ (A [ σ ]ᴹᵀᴿ))
+    _[_]ᴹᴿ A a σ = lam (λ δ → a ∙ σ δ)
+
+    pᴹ : (A : Tm (tyᴹ Γ)) → Subᴹ (Γ ▷ᴹ A) Γ
+    pᴹ A γ = firstᵁ γ
+
+    qᴹ : (A : Tm (tyᴹ Γ)) → Tm (tmᴹ (Γ ▷ᴹ A) (A [ pᴹ A ]ᴹᵀ))
+    qᴹ A = lam (λ γ → secondᵁ γ)
+
+    _,ᴹ_ : {A : Tm (tyᴹ Γ)} (σ : Subᴹ Δ Γ) → Tm (tmᴹ Δ (A [ σ ]ᴹᵀ)) → Subᴹ Δ (Γ ▷ᴹ A)
+    (σ ,ᴹ a) δ = pairᵁ (σ δ) (a ∙ δ)
