@@ -91,7 +91,7 @@ Ty : U = (i : In0) → Ty' i
 -- a new representable sort, and we also get an iso that relates them via In.
 Tmω : Ty → Uᴿ
 Tm0 : Ty → Uᴿ
-(↓, ↑) : (In0 → Tmω A) ≃ Tm0 A
+(↓, ↑) : ((i : In0) → Tmω A) ≃ Tm0 A
 
 -- Each time we bind a representable sort with an open modality in the original
 -- PSOGAT (e.g. @0 Tm A), this is translated to the generated representable
