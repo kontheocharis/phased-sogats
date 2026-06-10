@@ -67,16 +67,37 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     -- First, we build a (Πᴿ, In(Φ))-CwF M where the types are Ty valued.
     -- Then, Psh(M) will support a model of PSOGAT-ToS(Φ).
 
+    -- Category
     Conᴹ : Set
     Conᴹ = Tm U
 
     variable
       Γ Δ Θ : Conᴹ
-      γ : Tm (El Γ)
 
     Subᴹ : (Γ Δ : Conᴹ) → Set
     Subᴹ Γ Δ = Tm (El Γ) → Tm (El Δ)
 
+    idᴹ : Subᴹ Γ Γ
+    idᴹ γ = γ
+
+    _∘ᴹ_ : Subᴹ Δ Θ → Subᴹ Γ Δ → Subᴹ Γ Θ
+    σ ∘ᴹ τ = λ γ → σ (τ γ)
+    -- @@Todo: laws
+
+    -- Terminal object
+    ∙ᴹ : Conᴹ
+    ∙ᴹ = 1ᵁ
+
+    εᴹ : Subᴹ Γ ∙ᴹ
+    εᴹ _ = topᵁ
+
+    ε-uniqᴹ : (σ : Subᴹ Γ ∙ᴹ) → σ ≡ εᴹ
+    ε-uniqᴹ σ = funext λ γ → top-uniqᵁ (σ γ)
+
+    variable
+      σ : Subᴹ Γ Δ
+
+    -- Presheaves
     tyᴹ : (Γ : Conᴹ) → Ty
     tyᴹ Γ = Γ ⇒ U
 
@@ -102,7 +123,7 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     variable
       A B : Tm (tyᴹ Γ)
       Aᴿ Bᴿ : Tm (tyᴹᴿ Γ)
-      σ : Subᴹ Γ Δ
+      γ : Tm (El Γ)
 
     _＠_ : Tm (tyᴹᴿ Γ) → (p : Phase) → (γ : Tm (El (# p ⇒ᴿ Γ))) → Tm Uᴿ
     (A ＠ p) γ = (first A ∙ᴱ p) ∙ γ
@@ -121,20 +142,14 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
       → Tm (El (elᴿ ((A ＠ ⊤) (lamᴿ λ _ → γ ∙ᴿ i))))
     ↑-_ {p = p} {γ} A x i = (iso-bwd ((first (second A) ∙ᴱ p) ∙ γ) x) ∙ᴿ i 
 
+    ιᴹᴿ : Tm (tyᴹᴿ Γ) → Tm (tyᴹ Γ)
+    ιᴹᴿ A = lam λ γ → elᴿ ((A ＠⊤) ∙ γ)
+
     tmᴹ : (Γ : Conᴹ) → Tm (tyᴹ Γ) → Ty
     tmᴹ Γ A = [ γ ∶ Γ ] ⇒ El (A ∙ γ)
 
     tmᴹᴿ : (Γ : Conᴹ) → Tm (tyᴹᴿ Γ) → Ty
     tmᴹᴿ Γ A = [ γ ∶ Γ ] ⇒ El (elᴿ ((A ＠⊤) ∙ γ))
-
-    _▷ᴹ_ : (Γ : Conᴹ) → Tm (tyᴹ Γ) → Conᴹ
-    Γ ▷ᴹ A = Σᵁ Γ (λ x → A ∙ x)
-
-    idᴹ : Subᴹ Γ Γ
-    idᴹ γ = γ
-
-    _∘ᴹ_ : Subᴹ Δ Θ → Subᴹ Γ Δ → Subᴹ Γ Θ
-    σ ∘ᴹ τ = λ γ → σ (τ γ)
 
     _[_]ᴹᵀ : Tm (tyᴹ Γ) → Subᴹ Δ Γ → Tm (tyᴹ Δ)
     A [ σ ]ᴹᵀ = lam (λ δ → A ∙ σ δ)
@@ -152,96 +167,143 @@ module PSOGAT-to-SOGAT (Φ : PhaseAlg) (s : SO.In-SOGAT-ToS) where
     _[_]ᴹᴿ : (a : Tm (tmᴹᴿ Γ Aᴿ)) (σ : Subᴹ Δ Γ) → Tm (tmᴹᴿ Δ (Aᴿ [ σ ]ᴹᵀᴿ))
     _[_]ᴹᴿ a σ = lam (λ δ → a ∙ σ δ)
 
-    pᴹ : Subᴹ (Γ ▷ᴹ A) Γ
-    pᴹ γ = firstᵁ γ
+    -- @@Todo: equations
 
-    qᴹ : Tm (tmᴹ (Γ ▷ᴹ A) (A [ pᴹ {A = A} ]ᴹᵀ))
-    qᴹ = lam (λ γ → secondᵁ γ)
+    -- Context extensions
+    opaque
+      _▷ᴹ_ : (Γ : Conᴹ) → Tm (tyᴹ Γ) → Conᴹ
+      Γ ▷ᴹ A = Σᵁ Γ (λ x → A ∙ x)
 
-    _,ᴹ_ : (σ : Subᴹ Δ Γ) → Tm (tmᴹ Δ (A [ σ ]ᴹᵀ)) → Subᴹ Δ (Γ ▷ᴹ A)
-    (σ ,ᴹ a) δ = pairᵁ (σ δ) (a ∙ δ)
+    opaque
+      unfolding _▷ᴹ_
 
-    elᴿᴹ : Tm (tyᴹᴿ Γ) → Tm (tyᴹ Γ)
-    elᴿᴹ A = lam (λ γ → elᴿ ((A ＠⊤) ∙ γ))
+      pᴹ : Subᴹ (Γ ▷ᴹ A) Γ
+      pᴹ γ = firstᵁ γ
 
-    Πᴿᴹ : (a : Tm (tyᴹᴿ Γ)) → Tm (tyᴹ (Γ ▷ᴹ elᴿᴹ a)) → Tm (tyᴹ Γ)
-    Πᴿᴹ a B = lam (λ γ → Πᴿ ((a ＠⊤) ∙ γ) (λ x → B ∙ pairᵁ γ x))
+      qᴹ : Tm (tmᴹ (Γ ▷ᴹ A) (A [ pᴹ {A = A} ]ᴹᵀ))
+      qᴹ = lam (λ γ → secondᵁ γ)
 
-    _▷ᴵᴹ_ : Conᴹ → Phase → Conᴹ
-    Γ ▷ᴵᴹ t = Σᵁ Γ (λ _ → elᴿ (# t))
+      _,ᴹ_ : (σ : Subᴹ Γ Δ) → Tm (tmᴹ Γ (A [ σ ]ᴹᵀ)) → Subᴹ Γ (Δ ▷ᴹ A)
+      (σ ,ᴹ a) δ = pairᵁ (σ δ) (a ∙ δ)
 
-    inᴹ : Conᴹ → Phase → Ty
-    inᴹ Γ t = Γ ⇒ El (elᴿ (# t))
+      -- @@Todo: equations
 
-    pᴵᴹ : Subᴹ (Γ ▷ᴵᴹ t) Γ
-    pᴵᴹ γ = firstᵁ γ
+    opaque
+      _▷ᴵᴹ_ : Conᴹ → Phase → Conᴹ
+      Γ ▷ᴵᴹ t = Σᵁ Γ (λ _ → elᴿ (# t))
 
-    qᴵᴹ : Tm (inᴹ (Γ ▷ᴵᴹ t) t)
-    qᴵᴹ = lam λ γ → secondᵁ γ
+    opaque
+      unfolding _▷ᴵᴹ_
 
-    _,ᴵᴹ_ : Subᴹ Δ Γ → Tm (inᴹ Δ t) → Subᴹ Δ (Γ ▷ᴵᴹ t)
-    (σ ,ᴵᴹ i) δ = pairᵁ (σ δ) (i ∙ δ)
+      inᴹ : Conᴹ → Phase → Ty
+      inᴹ Γ t = Γ ⇒ El (elᴿ (# t))
 
-    Πᴾᴹ : (t : Phase) → Tm (tyᴹ (Γ ▷ᴵᴹ t)) → Tm (tyᴹ Γ)
-    Πᴾᴹ t B = lam (λ γ → Πᴿ (# t) (λ i → B ∙ pairᵁ γ i))
+      pᴵᴹ : Subᴹ (Γ ▷ᴵᴹ t) Γ
+      pᴵᴹ γ = firstᵁ γ
 
-    #-π₁ : Tm (El (elᴿ (# (p ∧ q)))) → Tm (El (elᴿ (# p)))
-    #-π₁ {p} {q} j = firstᵁ (iso-bwd (#∧ {p} {q}) j)
+      qᴵᴹ : Tm (inᴹ (Γ ▷ᴵᴹ t) t)
+      qᴵᴹ = lam λ γ → secondᵁ γ
 
-    #-π₂ : Tm (El (elᴿ (# (p ∧ q)))) → Tm (El (elᴿ (# q)))
-    #-π₂ {p} {q} j = secondᵁ (iso-bwd (#∧ {p} {q}) j)
+      _,ᴵᴹ_ : Subᴹ Δ Γ → Tm (inᴹ Δ t) → Subᴹ Δ (Γ ▷ᴵᴹ t)
+      (σ ,ᴵᴹ i) δ = pairᵁ (σ δ) (i ∙ δ)
 
-    #-pair : Tm (El (elᴿ (# p))) → Tm (El (elᴿ (# q))) → Tm (El (elᴿ (# (p ∧ q))))
-    #-pair i k = iso-fwd #∧ (pairᵁ i k)
+    -- Type formers
+    opaque
+      unfolding _,ᴹ_ _,ᴵᴹ_
 
-    Πᴾᴿᴹ : (t : Phase) → Tm (tyᴹᴿ (Γ ▷ᴵᴹ t)) → Tm (tyᴹᴿ Γ)
-    Πᴾᴿᴹ t B = pair
-      (lamᴱ λ p → lam λ γ →
-        (first B ∙ᴱ (p ∧ t)) ∙ lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) (#-π₂ {p} {t} j)))
-      (pair (lamᴱ λ p → lam λ γ →
-        iso (λ input →
-          iso-fwd
-            ((first (second B) ∙ᴱ (p ∧ t)) ∙
-              lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) (#-π₂ {p} {t} j)))
-            (lamᴿ (λ j →
-              coe (cong (λ y → Tm (El (elᴿ ((first B ∙ᴱ ⊤) ∙
-                lamᴿ (λ _ → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) y)))))
-                  (#-prop (#-π₂ {⊤} {t} (#-π₂ {p} {t} j)) (#-π₂ {p} {t} j)))
-                ((iso-bwd ((first (second B) ∙ᴱ t) ∙
-                  lamᴿ (λ k → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) (#-π₂ {⊤} {t} k)))
-                    (input ∙ᴿ #-π₁ {p} {t} j))
-                ∙ᴿ #-π₂ {p} {t} j))))
-        (λ output →
-          lamᴿ (λ i →
+      Unitᴹ : Tm (tyᴹ Γ)
+      Unitᴹ = lam λ _ → 1ᵁ
+
+      unitᴹ : Tm (tmᴹ Γ Unitᴹ)
+      unitᴹ = lam λ _ → topᵁ
+
+      unit-uniqᴹ : (a : Tm (tmᴹ Γ Unitᴹ)) → a ≡ unitᴹ
+      unit-uniqᴹ a = cong lam (funext λ γ → top-uniqᵁ (a ∙ γ))
+
+      Σᴹ : (A : Tm (tyᴹ Γ)) → Tm (tyᴹ (Γ ▷ᴹ A)) → Tm (tyᴹ Γ)
+      Σᴹ A B = lam λ γ → Σᵁ (A ∙ γ) (λ x → B ∙ pairᵁ γ x)
+
+      ⟨_⟩ᴹ : Tm (tmᴹ Γ A) → Subᴹ Γ (Γ ▷ᴹ A)
+      ⟨_⟩ᴹ {A = A} a = _,ᴹ_ {A = A} idᴹ a
+
+      pair-projᴹ : (Σ[ a ∈ Tm (tmᴹ Γ A) ] Tm (tmᴹ Γ (B [ ⟨ a ⟩ᴹ ]ᴹᵀ))) ≃ Tm (tmᴹ Γ (Σᴹ A B))
+      pair-projᴹ .to (a ,, b) = lam λ γ → pairᵁ (a ∙ γ) (b ∙ γ)
+      pair-projᴹ .from p = (lam λ γ → firstᵁ (p ∙ γ)) ,, (lam λ γ → secondᵁ (p ∙ γ))
+      pair-projᴹ .to-from _ = refl
+      pair-projᴹ .from-to _ = refl
+
+      elᴿᴹ : Tm (tyᴹᴿ Γ) → Tm (tyᴹ Γ)
+      elᴿᴹ A = lam (λ γ → elᴿ ((A ＠⊤) ∙ γ))
+
+      Πᴿᴹ : (a : Tm (tyᴹᴿ Γ)) → Tm (tyᴹ (Γ ▷ᴹ elᴿᴹ a)) → Tm (tyᴹ Γ)
+      Πᴿᴹ a B = lam (λ γ → Πᴿ ((a ＠⊤) ∙ γ) (λ x → B ∙ pairᵁ γ x))
+
+      lam-appᴿᴹ : Tm (tmᴹ (Γ ▷ᴹ elᴿᴹ Aᴿ) B) ≃ Tm (tmᴹ Γ (Πᴿᴹ Aᴿ B))
+      lam-appᴿᴹ .to f = lam λ γ → lamᴿ λ x → f ∙ pairᵁ γ x
+      lam-appᴿᴹ .from g = lam λ γ → (g ∙ firstᵁ γ) ∙ᴿ secondᵁ γ
+      lam-appᴿᴹ .to-from _ = refl
+      lam-appᴿᴹ .from-to _ = refl
+
+      Πᴾᴹ : (t : Phase) → Tm (tyᴹ (Γ ▷ᴵᴹ t)) → Tm (tyᴹ Γ)
+      Πᴾᴹ t B = lam (λ γ → Πᴿ (# t) (λ i → B ∙ pairᵁ γ i))
+
+      #-π₁ : Tm (El (elᴿ (# (p ∧ q)))) → Tm (El (elᴿ (# p)))
+      #-π₁ {p} {q} j = firstᵁ (iso-bwd (#∧ {p} {q}) j)
+
+      #-π₂ : Tm (El (elᴿ (# (p ∧ q)))) → Tm (El (elᴿ (# q)))
+      #-π₂ {p} {q} j = secondᵁ (iso-bwd (#∧ {p} {q}) j)
+
+      #-pair : Tm (El (elᴿ (# p))) → Tm (El (elᴿ (# q))) → Tm (El (elᴿ (# (p ∧ q))))
+      #-pair i k = iso-fwd #∧ (pairᵁ i k)
+
+      Πᴾᴿᴹ : (t : Phase) → Tm (tyᴹᴿ (Γ ▷ᴵᴹ t)) → Tm (tyᴹᴿ Γ)
+      Πᴾᴿᴹ t B = pair
+        (lamᴱ λ p → lam λ γ →
+          (first B ∙ᴱ (p ∧ t)) ∙ lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ j) (#-π₂ j)))
+        (pair (lamᴱ λ p → lam λ γ →
+          iso (λ input →
             iso-fwd
-              ((first (second B) ∙ᴱ t) ∙
-                lamᴿ (λ k → pairᵁ (γ ∙ᴿ i) (#-π₂ {⊤} {t} k)))
-              (lamᴿ (λ k →
-                coe (cong (λ pr → Tm (El (elᴿ ((first B ∙ᴱ ⊤) ∙ lamᴿ (λ _ → pr)))))
-                  (cong₂ pairᵁ (cong (γ ∙ᴿ_) (#-prop (#-π₁ {p} {t} (#-pair i k)) i))
-                    (#-prop (#-π₂ {p} {t} (#-pair i k)) (#-π₂ {⊤} {t} k))))
-                  ((iso-bwd ((first (second B) ∙ᴱ (p ∧ t)) ∙
-                    lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) (#-π₂ {p} {t} j)))
-                  output)
-                ∙ᴿ #-pair i k)))))
-          {!!}  -- oh god
-          {!!})
-        top)
+              ((first (second B) ∙ᴱ (p ∧ t)) ∙
+                lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ j) (#-π₂ j)))
+              (lamᴿ (λ j →
+                coe (cong (λ y → Tm (El (elᴿ ((first B ∙ᴱ ⊤) ∙
+                  lamᴿ (λ _ → pairᵁ (γ ∙ᴿ #-π₁ {p} {t} j) y)))))
+                    (#-prop (#-π₂ (#-π₂ {p} {t} j)) (#-π₂ j)))
+                  ((iso-bwd ((first (second B) ∙ᴱ t) ∙
+                    lamᴿ (λ k → pairᵁ (γ ∙ᴿ #-π₁ j) (#-π₂ k)))
+                      (input ∙ᴿ #-π₁ j))
+                  ∙ᴿ #-π₂ j))))
+          (λ output →
+            lamᴿ (λ i →
+              iso-fwd
+                ((first (second B) ∙ᴱ t) ∙
+                  lamᴿ (λ k → pairᵁ (γ ∙ᴿ i) (#-π₂ k)))
+                (lamᴿ (λ k →
+                  coe (cong (λ pr → Tm (El (elᴿ ((first B ∙ᴱ ⊤) ∙ lamᴿ (λ _ → pr)))))
+                    (cong₂ pairᵁ (cong (γ ∙ᴿ_) (#-prop (#-π₁ (#-pair i k)) i))
+                      (#-prop (#-π₂ (#-pair i k)) (#-π₂ k))))
+                    ((iso-bwd ((first (second B) ∙ᴱ (p ∧ t)) ∙
+                      lamᴿ (λ j → pairᵁ (γ ∙ᴿ #-π₁ j) (#-π₂ {p} {t} j)))
+                    output)
+                  ∙ᴿ #-pair i k)))))
+            {!!}  -- oh god
+            {!!})
+          top)
 
-    ↑↓ᵁᴹ : Tm (tmᴹ (Γ ▷ᴵᴹ t) A) ≃ Tm (tmᴹ Γ (Πᴾᴹ t A))
-    ↑↓ᵁᴹ .to f = lam λ γ → lamᴿ λ j → f ∙ pairᵁ γ j
-    ↑↓ᵁᴹ .from g = lam λ γ → (g ∙ firstᵁ γ) ∙ᴿ secondᵁ γ
-    ↑↓ᵁᴹ .to-from _ = refl
-    ↑↓ᵁᴹ .from-to _ = refl
+      ↑↓ᵁᴹ : Tm (tmᴹ (Γ ▷ᴵᴹ t) A) ≃ Tm (tmᴹ Γ (Πᴾᴹ t A))
+      ↑↓ᵁᴹ .to f = lam λ γ → lamᴿ λ j → f ∙ pairᵁ γ j
+      ↑↓ᵁᴹ .from g = lam λ γ → (g ∙ firstᵁ γ) ∙ᴿ secondᵁ γ
+      ↑↓ᵁᴹ .to-from _ = refl
+      ↑↓ᵁᴹ .from-to _ = refl
 
-    ↑↓ᴿᴹ : Tm (tmᴹᴿ (Γ ▷ᴵᴹ t) Aᴿ) ≃ Tm (tmᴹᴿ Γ (Πᴾᴿᴹ t Aᴿ))
-    ↑↓ᴿᴹ {t = t} {Aᴿ = Aᴿ} .to f = lam λ γ →
-      ↓-_ {p = t} {γ = lamᴿ λ j → pairᵁ γ (#-π₂ {⊤} {t} j)} Aᴿ
-        λ i → f ∙ pairᵁ γ (#-π₂ {⊤} {t} i)
-    ↑↓ᴿᴹ {t = t} {Aᴿ = Aᴿ} .from g = lam λ γ →
-      coe (cong (λ y → Tm (El (elᴿ ((Aᴿ ＠ ⊤) (lamᴿ λ _ → pairᵁ (firstᵁ γ) y)))))
-                (#-prop (#-π₂ {⊤} {t} (secondᵁ γ)) (secondᵁ γ)))
-        (↑-_ {p = t} {γ = lamᴿ λ j → pairᵁ (firstᵁ γ) (#-π₂ {⊤} {t} j)} Aᴿ
-          (g ∙ firstᵁ γ) (secondᵁ γ))
-    ↑↓ᴿᴹ .to-from _ = {!!}
-    ↑↓ᴿᴹ .from-to _ = {!!}
+      ↑↓ᴿᴹ : Tm (tmᴹᴿ (Γ ▷ᴵᴹ t) Aᴿ) ≃ Tm (tmᴹᴿ Γ (Πᴾᴿᴹ t Aᴿ))
+      ↑↓ᴿᴹ {t = t} {Aᴿ = Aᴿ} .to f = lam λ γ →
+        ↓-_ {p = t} {γ = lamᴿ λ j → pairᵁ γ (#-π₂ {⊤} {t} j)} Aᴿ
+          λ i → f ∙ pairᵁ γ (#-π₂ {⊤} {t} i)
+      ↑↓ᴿᴹ {t = t} {Aᴿ = Aᴿ} .from g = lam λ γ →
+        coe (cong (λ y → Tm (El (elᴿ ((Aᴿ ＠ ⊤) (lamᴿ λ _ → pairᵁ (firstᵁ γ) y)))))
+                  (#-prop (#-π₂ {⊤} {t} (secondᵁ γ)) (secondᵁ γ)))
+          (↑-_ {p = t} {γ = lamᴿ λ j → pairᵁ (firstᵁ γ) (#-π₂ {⊤} {t} j)} Aᴿ
+            (g ∙ firstᵁ γ) (secondᵁ γ))
+      ↑↓ᴿᴹ .to-from _ = {!!}
+      ↑↓ᴿᴹ .from-to _ = {!!}

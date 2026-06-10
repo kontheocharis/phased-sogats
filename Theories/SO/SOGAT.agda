@@ -25,7 +25,7 @@ module SOGAT-ToS (s : In-SOGAT-ToS) where
     Πᴿ-β : (lamᴿ f) ∙ᴿ b ≡ f b
   {-# REWRITE Πᴿ-β #-}
   postulate
-    Πᴿ-η : lamᴿ (λ x → a ∙ᴿ x) ≡ a
+    Πᴿ-η : lamᴿ (a ∙ᴿ_) ≡ a
   {-# REWRITE Πᴿ-η #-}
 
   syntax Πᴿ a (λ x → B) = [ x ∶ a ] ⇒ᴿ B

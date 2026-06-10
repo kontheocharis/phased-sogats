@@ -4,3 +4,4 @@ include: .
 flags:
   --prop
   --rewriting
+  -WnoRewriteVariablesBoundInSingleton
